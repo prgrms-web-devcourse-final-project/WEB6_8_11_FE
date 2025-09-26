@@ -1,0 +1,109 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+body {
+  color: var(--text-primary);
+  background: var(--background-default);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--primary-main);
+}
+
+:root {
+  /* Color Palette - Airbnb Travel Style */
+  --primary-main: #FF6B6B;
+  --primary-light: #FF8E8E;
+  --primary-dark: #E85555;
+
+  --secondary-main: #4ECDC4;
+  --secondary-light: #7EDDD6;
+  --secondary-dark: #3AB8B0;
+
+  --accent-main: #FFE66D;
+  --accent-light: #FFF08E;
+  --accent-dark: #E8CE56;
+
+  --background-default: #FAFAFA;
+  --background-paper: #FFFFFF;
+
+  --text-primary: #2D2D2D;
+  --text-secondary: #757575;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.4s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-default: #1A1A1A;
+    --background-paper: #2D2D2D;
+    --text-primary: #FAFAFA;
+    --text-secondary: #B0B0B0;
+  }
+}
+
+/* Custom Scrollbar - Subtle Style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection Color */
+::selection {
+  background-color: var(--primary-light);
+  color: white;
+}
+
+::-moz-selection {
+  background-color: var(--primary-light);
+  color: white;
+}
