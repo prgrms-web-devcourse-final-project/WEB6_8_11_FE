@@ -20,7 +20,7 @@ const languages: { code: Language; name: string; flag: string }[] = [
 ];
 
 interface LanguageSelectorProps {
-  variant?: "glassmorphism" | "default";
+  variant?: "glassmorphism" | "default" | "compact";
 }
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
@@ -103,6 +103,27 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     },
   };
 
+  // Compact style for header usage
+  const compactStyle = {
+    backgroundColor: "transparent",
+    borderRadius: 1,
+    "& .MuiSelect-select": {
+      display: "flex",
+      alignItems: "center",
+      gap: 0.5,
+      padding: "4px 8px",
+    },
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderColor: "transparent",
+    },
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      borderColor: "divider",
+    },
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+      borderColor: "primary.main",
+    },
+  };
+
   const glassmorphismMenuProps = {
     PaperProps: {
       sx: {
@@ -152,14 +173,20 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     <FormControl
       size="small"
       sx={{
-        minWidth: 120,
+        minWidth: variant === "compact" ? 80 : 120,
       }}
     >
       <Select
         value={currentLanguage}
         onChange={handleLanguageChange}
         displayEmpty
-        sx={variant === "glassmorphism" ? glassmorphismStyle : defaultStyle}
+        sx={
+          variant === "glassmorphism"
+            ? glassmorphismStyle
+            : variant === "compact"
+            ? compactStyle
+            : defaultStyle
+        }
         MenuProps={
           variant === "glassmorphism"
             ? glassmorphismMenuProps

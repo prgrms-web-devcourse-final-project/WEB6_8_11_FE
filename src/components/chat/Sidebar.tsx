@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   Box,
   Drawer,
@@ -14,14 +14,14 @@ import {
   Button,
   IconButton,
   Stack,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   Chat as ChatIcon,
   Person as PersonIcon,
-} from '@mui/icons-material';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Chat, User } from '@/types';
+} from "@mui/icons-material";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Chat, User } from "@/types";
 
 interface SidebarProps {
   open: boolean;
@@ -32,7 +32,7 @@ interface SidebarProps {
   onNewChat: () => void;
   onSelectChat: (chatId: string) => void;
   onProfileClick: () => void;
-  variant?: 'permanent' | 'temporary';
+  variant?: "permanent" | "temporary";
   width?: number;
 }
 
@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNewChat,
   onSelectChat,
   onProfileClick,
-  variant = 'permanent',
+  variant = "permanent",
   width = 280,
 }) => {
   const { t } = useTranslation();
@@ -55,9 +55,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('ko-KR', {
-      month: 'short',
-      day: 'numeric',
+    return new Intl.DateTimeFormat("ko-KR", {
+      month: "short",
+      day: "numeric",
     }).format(date);
   };
 
@@ -65,10 +65,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <Box
       sx={{
         width: width,
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: 'background.paper',
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "background.paper",
       }}
     >
       {/* New Chat Button */}
@@ -83,24 +83,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
             borderRadius: 2,
           }}
         >
-          {t('chat.newChat')}
+          {t("chat.newChat")}
         </Button>
       </Box>
 
       <Divider />
 
       {/* Chat History */}
-      <Box sx={{ flex: 1, overflow: 'hidden' }}>
+      <Box sx={{ flex: 1, overflow: "hidden" }}>
         <Box sx={{ p: 2, pb: 1 }}>
           <Typography variant="h6" color="text.secondary" fontSize="0.875rem">
-            {t('chat.chatHistory')}
+            {t("chat.chatHistory")}
           </Typography>
         </Box>
 
-        <List sx={{ flex: 1, overflow: 'auto', px: 1 }}>
+        <List sx={{ flex: 1, overflow: "auto", px: 1 }}>
           {chatHistory.map((chat) => {
             const firstMessage = chat.messages[0];
-            const preview = firstMessage ? firstMessage.content : '';
+            const preview = firstMessage ? firstMessage.content : "";
             const isSelected = chat.id === currentChatId;
 
             return (
@@ -110,24 +110,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => onSelectChat(chat.id)}
                   sx={{
                     borderRadius: 1,
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
+                    flexDirection: "column",
+                    alignItems: "flex-start",
                     py: 1.5,
                     px: 2,
-                    '&.Mui-selected': {
-                      bgcolor: 'primary.main',
-                      color: 'primary.contrastText',
-                      '&:hover': {
-                        bgcolor: 'primary.dark',
+                    "&.Mui-selected": {
+                      bgcolor: "primary.main",
+                      color: "primary.contrastText",
+                      "&:hover": {
+                        bgcolor: "primary.dark",
                       },
                     },
                   }}
                 >
                   <Box
                     sx={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
                       gap: 1,
                       mb: 0.5,
                     }}
@@ -138,9 +138,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       fontWeight={500}
                       sx={{
                         flex: 1,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       {truncateText(chat.title, 25)}
@@ -149,7 +149,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       variant="caption"
                       sx={{
                         opacity: 0.7,
-                        fontSize: '0.75rem',
+                        fontSize: "0.75rem",
                       }}
                     >
                       {formatDate(chat.createdAt)}
@@ -160,12 +160,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <Typography
                       variant="caption"
                       sx={{
-                        width: '100%',
+                        width: "100%",
                         opacity: 0.7,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        fontSize: '0.75rem',
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        fontSize: "0.75rem",
                         lineHeight: 1.2,
                       }}
                     >
@@ -181,8 +181,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Box
               sx={{
                 p: 3,
-                textAlign: 'center',
-                color: 'text.secondary',
+                textAlign: "center",
+                color: "text.secondary",
               }}
             >
               <ChatIcon sx={{ fontSize: 48, opacity: 0.3, mb: 1 }} />
@@ -204,8 +204,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             sx={{
               borderRadius: 1,
               p: 1.5,
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               gap: 1.5,
             }}
           >
@@ -214,7 +214,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               sx={{
                 width: 40,
                 height: 40,
-                bgcolor: 'primary.main',
+                bgcolor: "primary.main",
               }}
             >
               {!user.avatar && <PersonIcon />}
@@ -225,9 +225,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 variant="body2"
                 fontWeight={500}
                 sx={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {user.name}
@@ -236,10 +236,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 variant="caption"
                 color="text.secondary"
                 sx={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  display: 'block',
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  display: "block",
                 }}
               >
                 {user.email}
@@ -251,7 +251,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </Box>
   );
 
-  if (variant === 'temporary') {
+  if (variant === "temporary") {
     return (
       <Drawer
         anchor="left"
@@ -267,20 +267,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   return (
-    <Drawer
-      variant="permanent"
+    <Box
+      component="div"
       sx={{
         width: width,
         flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: width,
-          boxSizing: 'border-box',
-          borderRight: '1px solid',
-          borderColor: 'divider',
-        },
+
+        borderRight: "1px solid",
+        borderColor: "divider",
+        height: "100%",
+        overflow: "hidden",
       }}
     >
       {sidebarContent}
-    </Drawer>
+    </Box>
   );
 };

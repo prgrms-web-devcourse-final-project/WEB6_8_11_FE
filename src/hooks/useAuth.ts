@@ -11,6 +11,8 @@ const mockUser: User = {
   avatar: '',
   joinDate: new Date('2024-01-01'),
   provider: 'google',
+  userType: 'regular',
+  nickname: 'JohnD',
 };
 
 export const useAuth = () => {

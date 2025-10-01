@@ -12,20 +12,25 @@ import {
   Person as PersonIcon,
   SmartToy as BotIcon,
 } from '@mui/icons-material';
-import { Message, User } from '@/types';
+import { Message, User, GuideProfile } from '@/types';
 
 interface MessageListProps {
   messages: Message[];
-  user: User | null;
+  currentUser: User | null;
+  guide?: GuideProfile;
+  typingMessage?: string;
 }
 
 interface MessageBubbleProps {
   message: Message;
-  user: User | null;
+  currentUser: User | null;
+  guide?: GuideProfile;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, user }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser, guide }) => {
   const isUser = message.sender === 'user';
+  const isGuide = message.sender === 'guide';
+  const isAI = message.sender === 'ai';
 
   const formatTime = (timestamp: Date) => {
     return new Intl.DateTimeFormat('ko-KR', {
@@ -49,12 +54,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, user }) => {
         sx={{
           width: 32,
           height: 32,
-          bgcolor: isUser ? 'primary.main' : 'secondary.main',
+          bgcolor: isUser ? 'primary.main' : isGuide ? 'success.main' : 'secondary.main',
         }}
-        src={isUser ? user?.avatar : undefined}
+        src={isUser ? currentUser?.avatar : isGuide ? guide?.profileImage : undefined}
       >
         {isUser ? (
-          user?.avatar ? null : <PersonIcon sx={{ fontSize: 18 }} />
+          currentUser?.avatar ? null : <PersonIcon sx={{ fontSize: 18 }} />
+        ) : isGuide ? (
+          guide?.profileImage ? null : (guide?.nickname.charAt(0) || 'G')
         ) : (
           <BotIcon sx={{ fontSize: 18 }} />
         )}
@@ -74,8 +81,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, user }) => {
           sx={{
             p: 2,
             borderRadius: 2,
-            backgroundColor: isUser ? 'primary.main' : 'grey.100',
-            color: isUser ? 'primary.contrastText' : 'text.primary',
+            backgroundColor: isUser
+              ? 'primary.main'
+              : isGuide
+                ? 'success.100'
+                : 'grey.100',
+            color: isUser
+              ? 'primary.contrastText'
+              : isGuide
+                ? 'success.800'
+                : 'text.primary',
             maxWidth: '100%',
             wordBreak: 'break-word',
             ...(isUser
@@ -116,7 +131,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, user }) => {
 
 export const MessageList: React.FC<MessageListProps> = ({
   messages,
-  user,
+  currentUser,
+  guide,
+  typingMessage,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -126,7 +143,7 @@ export const MessageList: React.FC<MessageListProps> = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, typingMessage]);
 
   return (
     <Box
@@ -164,9 +181,39 @@ export const MessageList: React.FC<MessageListProps> = ({
           <MessageBubble
             key={message.id}
             message={message}
-            user={user}
+            currentUser={currentUser}
+            guide={guide}
           />
         ))
+      )}
+
+      {/* Typing Indicator */}
+      {typingMessage && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            mb: 2,
+            ml: 5,
+          }}
+        >
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              fontStyle: 'italic',
+              animation: 'pulse 1.5s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%': { opacity: 0.6 },
+                '50%': { opacity: 1 },
+                '100%': { opacity: 0.6 },
+              },
+            }}
+          >
+            {typingMessage}
+          </Typography>
+        </Box>
       )}
 
       <div ref={messagesEndRef} />

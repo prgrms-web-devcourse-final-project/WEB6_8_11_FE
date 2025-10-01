@@ -1,4 +1,5 @@
 import { Nunito, Noto_Sans_KR } from 'next/font/google';
+import { Box } from '@mui/material';
 import './globals.css';
 import { Providers } from './providers';
 
@@ -29,7 +30,11 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${nunito.variable} ${notoSansKR.variable}`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            {children}
+          </Box>
+        </Providers>
       </body>
     </html>
   );

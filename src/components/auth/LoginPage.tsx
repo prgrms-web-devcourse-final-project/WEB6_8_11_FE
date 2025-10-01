@@ -73,7 +73,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onOAuthLogin }) => {
                 <Typography
                   variant="h1"
                   sx={{
-                    fontSize: { xs: "2rem", md: "2.5rem", lg: "3rem" },
+                    fontSize: { xs: "1.8rem", md: "2.3rem", lg: "2.8rem" },
                     fontWeight: 700,
                     color: "white",
                     textShadow: "0 2px 10px rgba(0, 0, 0, 0.5)",
@@ -131,7 +131,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onOAuthLogin }) => {
                 <Typography
                   variant="h3"
                   sx={{
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
+                    fontSize: { xs: "1.1rem", md: "1.3rem" },
                     fontWeight: 600,
                     color: "white",
                     textAlign: "center",

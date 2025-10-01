@@ -15,12 +15,11 @@ import {
 } from "@mui/icons-material";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
-import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { Chat, User } from "@/types";
 
 interface ChatAreaProps {
   currentChat: Chat | null;
-  user: User | null;
+  currentUser: User | null;
   onSendMessage: (message: string) => void;
   onMenuClick?: () => void;
   showMenuButton?: boolean;
@@ -28,7 +27,7 @@ interface ChatAreaProps {
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
   currentChat,
-  user,
+  currentUser,
   onSendMessage,
   onMenuClick,
   showMenuButton = false,
@@ -46,25 +45,26 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   return (
     <Box
       sx={{
-        flex: 1,
+        width: "100%",
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
+        height: "100%",
         overflow: "hidden",
+        backgroundColor: "background.default",
       }}
     >
       {/* Chat Header */}
       <AppBar
         position="static"
         color="transparent"
-        elevation={1}
+        elevation={0}
         sx={{
           backgroundColor: "background.paper",
           borderBottom: "1px solid",
           borderColor: "divider",
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ minHeight: 64 }}>
           {showMenuButton && (
             <IconButton edge="start" onClick={onMenuClick} sx={{ mr: 2 }}>
               <MenuIcon />
@@ -78,7 +78,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                   variant="h6"
                   component="h1"
                   sx={{
-                    fontSize: "1.1rem",
+                    fontSize: "1.125rem",
                     fontWeight: 600,
                     color: "text.primary",
                   }}
@@ -112,7 +112,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 variant="h6"
                 component="h1"
                 sx={{
-                  fontSize: "1.1rem",
+                  fontSize: "1.125rem",
                   fontWeight: 600,
                   color: "text.primary",
                 }}
@@ -120,11 +120,6 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 새 채팅
               </Typography>
             )}
-          </Box>
-
-          {/* Language Selector */}
-          <Box sx={{ ml: 2 }}>
-            <LanguageSelector variant="default" />
           </Box>
         </Toolbar>
       </AppBar>
@@ -136,13 +131,17 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          backgroundColor: "background.default",
+          px: { xs: 0, sm: 2, md: 3 },
+          pt: 2,
         }}
       >
-        <MessageList messages={currentChat?.messages || []} user={user} />
+        <MessageList
+          messages={currentChat?.messages || []}
+          currentUser={currentUser}
+        />
 
         {/* Message Input */}
-        <Box sx={{ p: 2, pt: 0 }}>
+        <Box sx={{ py: 2, maxWidth: 800, width: "100%", mx: "auto" }}>
           <MessageInput onSendMessage={onSendMessage} />
         </Box>
       </Box>
