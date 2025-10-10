@@ -7,21 +7,31 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate:api": "npx @hey-api/openapi-ts -i api-specification.yaml -o src/lib/generated -c @hey-api/client-axios"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
+    "@mui/icons-material": "^6.1.9",
+    "@mui/material": "^6.1.9",
+    "@stomp/stompjs": "^7.2.0",
+    "@tanstack/react-query": "^5.62.11",
+    "@tanstack/react-query-devtools": "^5.62.11",
+    "axios": "^1.7.9",
     "next": "15.1.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@mui/material": "^6.1.9",
-    "@mui/icons-material": "^6.1.9",
-    "@emotion/react": "^11.13.5",
-    "@emotion/styled": "^11.13.5"
+    "sockjs-client": "^1.6.1"
   },
   "devDependencies": {
+    "@7nohe/openapi-react-query-codegen": "^1.6.1",
+    "@hey-api/client-axios": "^0.9.1",
+    "@hey-api/openapi-ts": "^0.85.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sockjs-client": "^1.5.4",
     "eslint": "^8",
     "eslint-config-next": "15.1.5",
     "typescript": "^5"

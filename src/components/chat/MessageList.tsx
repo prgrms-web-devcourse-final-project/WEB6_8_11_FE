@@ -56,12 +56,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser, gui
           height: 32,
           bgcolor: isUser ? 'primary.main' : isGuide ? 'success.main' : 'secondary.main',
         }}
-        src={isUser ? currentUser?.avatar : isGuide ? guide?.profileImage : undefined}
+        src={isUser ? currentUser?.avatar : isGuide ? guide?.profileImageUrl : undefined}
       >
         {isUser ? (
           currentUser?.avatar ? null : <PersonIcon sx={{ fontSize: 18 }} />
         ) : isGuide ? (
-          guide?.profileImage ? null : (guide?.nickname.charAt(0) || 'G')
+          guide?.profileImageUrl ? null : (guide?.nickname.charAt(0) || 'G')
         ) : (
           <BotIcon sx={{ fontSize: 18 }} />
         )}

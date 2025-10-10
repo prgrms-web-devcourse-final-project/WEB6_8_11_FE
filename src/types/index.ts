@@ -1,3 +1,44 @@
+// Location enum types (matches API spec)
+export type LocationCode =
+  | 'SEOUL'
+  | 'BUSAN'
+  | 'DAEGU'
+  | 'INCHEON'
+  | 'GWANGJU'
+  | 'DAEJEON'
+  | 'ULSAN'
+  | 'SEJONG'
+  | 'GYEONGGI'
+  | 'GANGWON'
+  | 'CHUNGCHEONGBUK'
+  | 'CHUNGCHEONGNAM'
+  | 'JEOLLABUK'
+  | 'JEOLLANAM'
+  | 'GYEONGSANGBUK'
+  | 'GYEONGSANGNAM'
+  | 'JEJU';
+
+// Location labels in Korean
+export const LOCATION_LABELS: Record<LocationCode, string> = {
+  SEOUL: '서울',
+  BUSAN: '부산',
+  DAEGU: '대구',
+  INCHEON: '인천',
+  GWANGJU: '광주',
+  DAEJEON: '대전',
+  ULSAN: '울산',
+  SEJONG: '세종',
+  GYEONGGI: '경기',
+  GANGWON: '강원',
+  CHUNGCHEONGBUK: '충청북도',
+  CHUNGCHEONGNAM: '충청남도',
+  JEOLLABUK: '전북',
+  JEOLLANAM: '전남',
+  GYEONGSANGBUK: '경북',
+  GYEONGSANGNAM: '경남',
+  JEJU: '제주',
+};
+
 // User related types
 export type UserType = 'regular' | 'guide';
 
@@ -12,17 +53,26 @@ export interface User {
   nickname?: string; // 닉네임 추가 (특히 가이드용)
 }
 
-// Guide specific types
-export interface GuideProfile extends User {
-  userType: 'guide';
-  nickname: string; // 가이드는 닉네임 필수
-  specialties: string[]; // 전문 분야
+// Guide specific types - aligned with API GuideResponse
+export interface GuideProfile {
+  id: number; // API uses number, not string
+  email: string;
+  nickname: string; // 가이드 닉네임 (필수)
+  profileImageUrl?: string; // API field name
+  role: 'USER' | 'ADMIN' | 'GUIDE' | 'PENDING';
+  location?: LocationCode; // 가이드 활동 지역 (Enum 타입)
   description?: string; // 가이드 소개
-  languages: string[]; // 지원 언어
-  isOnline: boolean; // 온라인 상태
-  averageRating: number; // 평균 평점
-  totalReviews: number; // 총 리뷰 수
-  profileImage?: string; // 프로필 이미지
+  // Legacy User fields for compatibility
+  name?: string; // Fallback to nickname
+  userType?: 'guide';
+  joinDate?: Date;
+  provider?: 'google' | 'kakao' | 'naver';
+  // Additional fields not in API but used in UI (optional for future implementation)
+  isOnline?: boolean;
+  specialties?: string[];
+  languages?: string[];
+  averageRating?: number;
+  totalReviews?: number;
 }
 
 // Chat related types
@@ -143,3 +193,21 @@ export interface ConnectionStatus {
   lastSeen?: Date;
   reconnectAttempts: number;
 }
+
+// Message converter utilities
+import type { ChatMessageResponse } from "@/lib/generated";
+
+/**
+ * Convert API ChatMessageResponse to local Message type
+ */
+export const convertChatMessageToMessage = (
+  apiMessage: ChatMessageResponse
+): Message => {
+  return {
+    id: apiMessage.id?.toString() || "",
+    content: apiMessage.content || "",
+    sender: "user", // Default to user, update based on senderId logic if needed
+    timestamp: new Date(apiMessage.createdAt || Date.now()),
+    readAt: undefined, // readAt not available in current API response
+  };
+};

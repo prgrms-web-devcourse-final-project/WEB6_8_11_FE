@@ -20,11 +20,19 @@ import {
   Circle as CircleIcon,
   Info as InfoIcon,
 } from '@mui/icons-material';
-import { Chat, User, GuideProfile, Message, TypingIndicator, ChatRating } from '@/types';
-import { MessageList } from './MessageList';
-import { MessageInput } from './MessageInput';
-import { useSocket } from '@/hooks/useSocket';
-import { ChatEndDialog } from '@/components/rating/ChatEndDialog';
+import {
+  Chat,
+  User,
+  GuideProfile,
+  Message,
+  ChatRating,
+  convertChatMessageToMessage,
+} from "@/types";
+import { MessageList } from "./MessageList";
+import { MessageInput } from "./MessageInput";
+import { useStompSocket } from "@/hooks/useStompSocket";
+import { useGetChatMessages } from "@/hooks/api/useUserChat";
+import { ChatEndDialog } from "@/components/rating/ChatEndDialog";
 
 interface GuideChatAreaProps {
   currentChat: Chat | null;
@@ -45,82 +53,86 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
   onMenuClick,
   onEndChat,
   showMenuButton = false,
-  websocketUrl = 'ws://localhost:8080/chat',
+  websocketUrl = "http://localhost:8080/ws/userchat",
 }) => {
   const [endDialogOpen, setEndDialogOpen] = useState(false);
-  const [typingMessage, setTypingMessage] = useState<string>('');
+  const [realtimeMessages, setRealtimeMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // WebSocket 연결
-  const {
-    connectionStatus,
-    messages: socketMessages,
-    typingUsers,
-    sendMessage: sendSocketMessage,
-    sendTyping,
-    markAsRead,
-    connect,
-    disconnect,
-  } = useSocket({
-    url: websocketUrl,
-    userId: user.id,
-    chatId: currentChat?.id || '',
-    autoConnect: !!currentChat,
+  // Extract numeric room ID from currentChat.id (format: "guide-{roomId}")
+  const roomId = currentChat?.id
+    ? parseInt(currentChat.id.replace("guide-", ""), 10)
+    : 0;
+
+  // Fetch message history via HTTP
+  const { data: messagesResponse } = useGetChatMessages(roomId, {
+    enabled: !!roomId && roomId > 0,
   });
 
-  // 메시지를 합친 목록 (기존 메시지 + 실시간 메시지)
+  // Convert API messages to local Message type
+  const httpMessages = React.useMemo(() => {
+    const apiMessages = messagesResponse?.data?.data || [];
+    return apiMessages.map(convertChatMessageToMessage);
+  }, [messagesResponse]);
+
+  // STOMP WebSocket connection
+  const { isConnected, sendMessage: sendStompMessage } = useStompSocket({
+    url: websocketUrl,
+    roomId: roomId,
+    onMessage: (message) => {
+      // Handle incoming real-time message
+      const newMessage: Message = {
+        id: message.id?.toString() || Date.now().toString(),
+        content: message.content || "",
+        sender:
+          message.senderType === "GUIDE"
+            ? ("guide" as const)
+            : ("user" as const),
+        timestamp: new Date(message.sentAt || Date.now()),
+      };
+
+      setRealtimeMessages((prev) => [...prev, newMessage]);
+    },
+    onConnect: () => {
+      console.log("[GuideChatArea] STOMP connected");
+    },
+    onDisconnect: () => {
+      console.log("[GuideChatArea] STOMP disconnected");
+    },
+    onError: (error) => {
+      console.error("[GuideChatArea] STOMP error:", error);
+    },
+    enabled: !!roomId && roomId > 0,
+  });
+
+  // Merge HTTP messages + realtime messages
   const allMessages = React.useMemo(() => {
-    const chatMessages = currentChat?.messages || [];
-    const combined = [...chatMessages, ...socketMessages];
-    return combined.sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    const combined = [...httpMessages, ...realtimeMessages];
+    // Remove duplicates by id
+    const uniqueMessages = Array.from(
+      new Map(combined.map((msg) => [msg.id, msg])).values()
     );
-  }, [currentChat?.messages, socketMessages]);
-
-  // 타이핑 표시 메시지 생성
-  useEffect(() => {
-    const guideTyping = typingUsers.find(user => user.userId === guide.id);
-    if (guideTyping && guideTyping.isTyping) {
-      setTypingMessage(`${guide.nickname}님이 입력 중입니다...`);
-    } else {
-      setTypingMessage('');
-    }
-  }, [typingUsers, guide.id, guide.nickname]);
-
-  // 메시지 스크롤
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [allMessages, typingMessage]);
-
-  // 메시지 읽음 처리
-  useEffect(() => {
-    const unreadMessages = allMessages.filter(
-      msg => msg.sender === 'guide' && !msg.readAt
+    return uniqueMessages.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
+  }, [httpMessages, realtimeMessages]);
 
-    unreadMessages.forEach(msg => {
-      markAsRead(msg.id);
-    });
-  }, [allMessages, markAsRead]);
+  // Reset realtime messages when chat changes
+  useEffect(() => {
+    setRealtimeMessages([]);
+  }, [currentChat?.id]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [allMessages]);
 
   const handleSendMessage = (content: string) => {
-    if (connectionStatus.isConnected && currentChat?.chatType === 'guide') {
-      // WebSocket으로 실시간 전송
-      sendSocketMessage(content);
+    if (isConnected && roomId > 0) {
+      sendStompMessage(content);
     } else {
-      // 기존 AI 채팅 방식
-      onSendMessage(content);
-    }
-  };
-
-  const handleInputChange = (value: string) => {
-    if (connectionStatus.isConnected) {
-      // 타이핑 상태 전송 (디바운싱)
-      if (value.length > 0) {
-        sendTyping(true);
-      } else {
-        sendTyping(false);
-      }
+      console.error("[GuideChatArea] Cannot send message: not connected");
     }
   };
 
@@ -128,10 +140,11 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
     setEndDialogOpen(true);
   };
 
-  const handleSubmitRating = async (rating: Omit<ChatRating, 'id' | 'createdAt'>) => {
+  const handleSubmitRating = async (
+    rating: Omit<ChatRating, "id" | "createdAt">
+  ) => {
     await onEndChat(rating);
     setEndDialogOpen(false);
-    disconnect();
   };
 
   if (!currentChat) {
@@ -174,18 +187,8 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
             <Badge
               overlap="circular"
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-              badgeContent={
-                <CircleIcon
-                  sx={{
-                    color: guide.isOnline ? 'success.main' : 'grey.400',
-                    fontSize: 16,
-                    bgcolor: 'background.paper',
-                    borderRadius: '50%',
-                  }}
-                />
-              }
             >
-              <Avatar src={guide.profileImage} sx={{ width: 40, height: 40, mr: 2 }}>
+              <Avatar src={guide.profileImageUrl} sx={{ width: 40, height: 40, mr: 2 }}>
                 {guide.nickname.charAt(0)}
               </Avatar>
             </Badge>
@@ -194,35 +197,31 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
               <Typography variant="subtitle1" fontWeight={600}>
                 {guide.nickname}
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <CircleIcon
                   sx={{
-                    color: connectionStatus.isConnected
-                      ? guide.isOnline ? 'success.main' : 'warning.main'
-                      : 'error.main',
+                    color: isConnected ? "success.main" : "error.main",
                     fontSize: 12,
                   }}
                 />
                 <Typography variant="caption" color="text.secondary">
-                  {connectionStatus.isConnected
-                    ? guide.isOnline ? '온라인' : '오프라인'
-                    : '연결 중...'}
+                  {isConnected ? "연결됨" : "연결 중..."}
                 </Typography>
               </Box>
             </Box>
 
-            {/* Specialties */}
-            <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
-              {guide.specialties.slice(0, 2).map((specialty, index) => (
+            {/* Location */}
+            {guide.location && (
+              <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
                 <Chip
-                  key={index}
-                  label={specialty}
+                  label={guide.location}
                   size="small"
+                  color="primary"
                   variant="outlined"
                   sx={{ height: 24, fontSize: '0.75rem' }}
                 />
-              ))}
-            </Box>
+              </Box>
+            )}
           </Box>
 
           {/* Action Buttons */}
@@ -245,26 +244,25 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
       </AppBar>
 
       {/* Connection Status Alert */}
-      {!connectionStatus.isConnected && currentChat.chatType === 'guide' && (
-        <Alert
-          severity="warning"
-          action={
-            <Button color="inherit" size="small" onClick={connect}>
-              재연결
-            </Button>
-          }
-        >
-          연결이 끊어졌습니다. 재연결을 시도 중입니다... ({connectionStatus.reconnectAttempts}/5)
+      {!isConnected && currentChat.chatType === "guide" && (
+        <Alert severity="warning">
+          연결이 끊어졌습니다. 재연결을 시도 중입니다...
         </Alert>
       )}
 
       {/* Messages */}
-      <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <Box
+        sx={{
+          flex: 1,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         <MessageList
           messages={allMessages}
           currentUser={user}
-          guide={currentChat.chatType === 'guide' ? guide : undefined}
-          typingMessage={typingMessage}
+          guide={currentChat.chatType === "guide" ? guide : undefined}
         />
         <div ref={messagesEndRef} />
       </Box>
@@ -272,14 +270,16 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
       {/* Message Input */}
       <MessageInput
         onSendMessage={handleSendMessage}
-        onInputChange={handleInputChange}
-        disabled={!currentChat.isActive || (!connectionStatus.isConnected && currentChat.chatType === 'guide')}
+        disabled={
+          !currentChat.isActive ||
+          (!isConnected && currentChat.chatType === "guide")
+        }
         placeholder={
-          currentChat.chatType === 'guide'
-            ? connectionStatus.isConnected
+          currentChat.chatType === "guide"
+            ? isConnected
               ? `${guide.nickname}님에게 메시지를 보내세요...`
-              : '연결을 기다리는 중...'
-            : '메시지를 입력하세요...'
+              : "연결을 기다리는 중..."
+            : "메시지를 입력하세요..."
         }
       />
 

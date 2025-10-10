@@ -1,0 +1,1137 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  -
+    url: "http://localhost:8080"
+    description: Generated server url
+tags:
+  -
+    name: 가이드 API
+    description: 가이드 조회 및 프로필 관리에 대한 API
+paths:
+  /api/rate/guides/{guideId}:
+    put:
+      tags:
+        - rate-controller
+      summary: 가이드 평가 생성/수정
+      operationId: rateGuide
+      parameters:
+        -
+          name: guideId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RateRequest"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseRateResponse"
+  /api/rate/aichat/sessions/{sessionId}:
+    put:
+      tags:
+        - rate-controller
+      summary: AI 채팅 세션 평가 생성/수정
+      operationId: rateAiSession
+      parameters:
+        -
+          name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RateRequest"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseRateResponse"
+  /api/userchat/rooms/{roomId}/messages:
+    get:
+      tags:
+        - chat-message-controller
+      operationId: listMessages
+      parameters:
+        -
+          name: roomId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        -
+          name: after
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        -
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 50
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseListChatMessageResponse"
+    post:
+      tags:
+        - chat-message-controller
+      operationId: sendMessage
+      parameters:
+        -
+          name: roomId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageSendRequest"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseChatMessageResponse"
+  /api/userchat/rooms/start:
+    post:
+      tags:
+        - chat-room-controller
+      operationId: startChat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRoomStartRequest"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseChatRoomResponse"
+  /api/auth/role:
+    post:
+      tags:
+        - auth-controller
+      summary: 신규 사용자 역할 선택
+      operationId: updateUserRole
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRoleUpdateRequest"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseLoginResponse"
+  /api/auth/refresh:
+    post:
+      tags:
+        - auth-controller
+      operationId: refreshAccessToken
+      parameters:
+        -
+          name: refreshToken
+          in: cookie
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseAccessTokenResponse"
+  /api/auth/logout:
+    post:
+      tags:
+        - auth-controller
+      summary: 로그아웃
+      operationId: logout
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseUnit"
+  /api/aichat/sessions:
+    get:
+      tags:
+        - ai-chat-controller
+      operationId: getSessions
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseListSessionsResponse"
+    post:
+      tags:
+        - ai-chat-controller
+      operationId: createSession
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseSessionsResponse"
+  /api/aichat/sessions/{sessionId}/messages:
+    get:
+      tags:
+        - ai-chat-controller
+      operationId: getSessionMessages
+      parameters:
+        -
+          name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseListSessionMessagesResponse"
+    post:
+      tags:
+        - ai-chat-controller
+      operationId: sendMessage_1
+      parameters:
+        -
+          name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiChatRequest"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseAiChatResponse"
+  /api/users/me:
+    get:
+      tags:
+        - user-controller
+      summary: 내 정보 조회
+      operationId: getMyProfile
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseUserResponse"
+    delete:
+      tags:
+        - user-controller
+      summary: 회원 탈퇴
+      operationId: deleteMe
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseUnit"
+    patch:
+      tags:
+        - user-controller
+      summary: 내 프로필 수정
+      operationId: updateMyProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseUserResponse"
+  /api/guides/me:
+    patch:
+      tags:
+        - 가이드 API
+      summary: 가이드 프로필 수정
+      operationId: updateMyGuideProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuideUpdateRequest"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseGuideResponse"
+  /api/aichat/sessions/{sessionId}/title:
+    patch:
+      tags:
+        - ai-chat-controller
+      operationId: updateSessionTitle
+      parameters:
+        -
+          name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSessionTitleRequest"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseUpdateSessionTitleResponse"
+  /weather/test2:
+    get:
+      tags:
+        - test-controller
+      operationId: test2
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TemperatureAndLandForecastDto"
+  /weather/test1:
+    get:
+      tags:
+        - test-controller
+      operationId: test1
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MidForecastDto"
+  /api/userchat/rooms:
+    get:
+      tags:
+        - chat-room-controller
+      operationId: listRooms
+      parameters:
+        -
+          name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+        -
+          name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseChatRoomListResponse"
+  /api/userchat/rooms/{roomId}:
+    get:
+      tags:
+        - chat-room-controller
+      operationId: get
+      parameters:
+        -
+          name: roomId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseChatRoomResponse"
+    delete:
+      tags:
+        - chat-room-controller
+      operationId: deleteRoom
+      parameters:
+        -
+          name: roomId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseUnit"
+  /api/rate/guides/my:
+    get:
+      tags:
+        - rate-controller
+      summary: 내가 받은 가이드 평가 조회
+      operationId: getMyGuideRatings
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseGuideRatingSummaryResponse"
+  /api/rate/admin/aichat/sessions:
+    get:
+      tags:
+        - rate-controller
+      summary: 관리자의 모든 AI 채팅 평가 조회
+      operationId: getAllAiSessionRatings
+      parameters:
+        -
+          name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Pageable"
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponsePageRateResponse"
+  /api/guides:
+    get:
+      tags:
+        - 가이드 API
+      summary: 가이드 목록 조회
+      operationId: getAllGuides
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseListGuideResponse"
+  /api/guides/{guideId}:
+    get:
+      tags:
+        - 가이드 API
+      summary: 가이드 단건 조회
+      operationId: getGuideById
+      parameters:
+        -
+          name: guideId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseGuideResponse"
+  /api/aichat/sessions/{sessionId}:
+    delete:
+      tags:
+        - ai-chat-controller
+      operationId: deleteSession
+      parameters:
+        -
+          name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            */*:
+              schema:
+                $ref: "#/components/schemas/ApiResponseUnit"
+components:
+  schemas:
+    RateRequest:
+      required:
+        - rating
+      type: object
+      properties:
+        rating:
+          maximum: 5
+          minimum: 1
+          type: integer
+          format: int32
+        comment:
+          type: string
+    ApiResponseRateResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/RateResponse"
+    RateResponse:
+      required:
+        - createdAt
+        - id
+        - raterNickname
+        - rating
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        raterNickname:
+          type: string
+        rating:
+          type: integer
+          format: int32
+        comment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    ChatMessageSendRequest:
+      required:
+        - content
+      type: object
+      properties:
+        content:
+          type: string
+    ApiResponseChatMessageResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/ChatMessageResponse"
+    ChatMessageResponse:
+      required:
+        - content
+        - createdAt
+        - roomId
+        - senderId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        roomId:
+          type: integer
+          format: int64
+        senderId:
+          type: integer
+          format: int64
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    ChatRoomStartRequest:
+      required:
+        - guideId
+        - userId
+      type: object
+      properties:
+        guideId:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+    ApiResponseChatRoomResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/ChatRoomResponse"
+    ChatRoomResponse:
+      required:
+        - guideId
+        - title
+        - updatedAt
+        - userId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        guideId:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+        updatedAt:
+          type: string
+          format: date-time
+        lastMessageId:
+          type: integer
+          format: int64
+    UserRoleUpdateRequest:
+      required:
+        - role
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+            - USER
+            - ADMIN
+            - GUIDE
+            - PENDING
+    ApiResponseLoginResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/LoginResponse"
+    LoginResponse:
+      required:
+        - accessToken
+      type: object
+      properties:
+        accessToken:
+          type: string
+    AccessTokenResponse:
+      required:
+        - accessToken
+      type: object
+      properties:
+        accessToken:
+          type: string
+    ApiResponseAccessTokenResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/AccessTokenResponse"
+    ApiResponseUnit:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/Unit"
+    Unit:
+      type: object
+    ApiResponseSessionsResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/SessionsResponse"
+    SessionsResponse:
+      required:
+        - sessionId
+        - sessionTitle
+      type: object
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+        sessionTitle:
+          type: string
+    AiChatRequest:
+      required:
+        - message
+      type: object
+      properties:
+        message:
+          type: string
+    AiChatResponse:
+      required:
+        - aiMessage
+        - userMessage
+      type: object
+      properties:
+        userMessage:
+          type: string
+        aiMessage:
+          type: string
+    ApiResponseAiChatResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/AiChatResponse"
+    UserUpdateRequest:
+      type: object
+      properties:
+        nickname:
+          type: string
+        profileImageUrl:
+          type: string
+    ApiResponseUserResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/UserResponse"
+    UserResponse:
+      required:
+        - email
+        - id
+        - nickname
+        - role
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+        nickname:
+          type: string
+        profileImageUrl:
+          type: string
+        role:
+          type: string
+          enum:
+            - USER
+            - ADMIN
+            - GUIDE
+            - PENDING
+    GuideUpdateRequest:
+      type: object
+      properties:
+        nickname:
+          type: string
+        profileImageUrl:
+          type: string
+        location:
+          type: string
+          enum:
+            - SEOUL
+            - BUSAN
+            - DAEGU
+            - INCHEON
+            - GWANGJU
+            - DAEJEON
+            - ULSAN
+            - SEJONG
+            - GYEONGGI
+            - GANGWON
+            - CHUNGCHEONGBUK
+            - CHUNGCHEONGNAM
+            - JEOLLABUK
+            - JEOLLANAM
+            - GYEONGSANGBUK
+            - GYEONGSANGNAM
+            - JEJU
+        description:
+          type: string
+    ApiResponseGuideResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/GuideResponse"
+    GuideResponse:
+      required:
+        - email
+        - id
+        - nickname
+        - role
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+        nickname:
+          type: string
+        profileImageUrl:
+          type: string
+        role:
+          type: string
+          enum:
+            - USER
+            - ADMIN
+            - GUIDE
+            - PENDING
+        location:
+          type: string
+          enum:
+            - SEOUL
+            - BUSAN
+            - DAEGU
+            - INCHEON
+            - GWANGJU
+            - DAEJEON
+            - ULSAN
+            - SEJONG
+            - GYEONGGI
+            - GANGWON
+            - CHUNGCHEONGBUK
+            - CHUNGCHEONGNAM
+            - JEOLLABUK
+            - JEOLLANAM
+            - GYEONGSANGBUK
+            - GYEONGSANGNAM
+            - JEJU
+        description:
+          type: string
+    UpdateSessionTitleRequest:
+      required:
+        - newTitle
+      type: object
+      properties:
+        newTitle:
+          type: string
+    ApiResponseUpdateSessionTitleResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/UpdateSessionTitleResponse"
+    UpdateSessionTitleResponse:
+      required:
+        - newTitle
+      type: object
+      properties:
+        newTitle:
+          type: string
+    TemperatureAndLandForecastDto:
+      type: object
+      properties:
+        regionCode:
+          type: string
+        baseTime:
+          type: string
+        minTemp:
+          type: integer
+          format: int32
+        maxTemp:
+          type: integer
+          format: int32
+        minTempRange:
+          type: string
+        maxTempRange:
+          type: string
+        amRainPercent:
+          type: integer
+          format: int32
+        pmRainPercent:
+          type: integer
+          format: int32
+        amWeather:
+          type: string
+        pmWeather:
+          type: string
+    MidForecastDto:
+      type: object
+      properties:
+        regionCode:
+          type: string
+        baseTime:
+          type: string
+        precipitation:
+          type: string
+        temperature:
+          type: string
+        maritime:
+          type: string
+        variability:
+          type: string
+    ApiResponseChatRoomListResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/ChatRoomListResponse"
+    ChatRoomListResponse:
+      required:
+        - rooms
+      type: object
+      properties:
+        rooms:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatRoomResponse"
+        nextCursor:
+          type: string
+    ApiResponseListChatMessageResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessageResponse"
+    ApiResponseGuideRatingSummaryResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/GuideRatingSummaryResponse"
+    GuideRatingSummaryResponse:
+      required:
+        - averageRating
+        - ratings
+        - totalRatings
+      type: object
+      properties:
+        averageRating:
+          type: number
+          format: double
+        totalRatings:
+          type: integer
+          format: int32
+        ratings:
+          type: array
+          items:
+            $ref: "#/components/schemas/RateResponse"
+    Pageable:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+    ApiResponsePageRateResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          $ref: "#/components/schemas/PageRateResponse"
+    PageRateResponse:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/RateResponse"
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        paged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        unpaged:
+          type: boolean
+    SortObject:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+    ApiResponseListGuideResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/GuideResponse"
+    ApiResponseListSessionsResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/SessionsResponse"
+    ApiResponseListSessionMessagesResponse:
+      required:
+        - msg
+      type: object
+      properties:
+        msg:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/SessionMessagesResponse"
+    SessionMessagesResponse:
+      required:
+        - content
+        - senderType
+      type: object
+      properties:
+        content:
+          type: string
+        senderType:
+          type: string
+          enum:
+            - USER
+            - AI

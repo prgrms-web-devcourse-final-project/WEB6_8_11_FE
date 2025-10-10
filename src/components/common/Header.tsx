@@ -11,8 +11,6 @@ import {
   InputAdornment,
   IconButton,
   Avatar,
-  Menu,
-  MenuItem,
   useMediaQuery,
   useTheme,
   Badge,
@@ -72,16 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const handleProfileMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleProfileMenuClose = () => {
-    setAnchorEl(null);
-  };
-
   const handleProfileClick = () => {
-    handleProfileMenuClose();
     if (onProfileClick) {
       onProfileClick();
     } else {
@@ -255,7 +244,7 @@ export const Header: React.FC<HeaderProps> = ({
             <>
               <IconButton
                 color="inherit"
-                onClick={handleProfileMenuClick}
+                onClick={handleProfileClick}
                 sx={{ ml: 1 }}
               >
                 <Badge
@@ -281,35 +270,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </Avatar>
                 </Badge>
               </IconButton>
-
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleProfileMenuClose}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-              >
-                <MenuItem onClick={handleProfileClick}>
-                  <PersonIcon sx={{ mr: 1 }} />
-                  {t("header.profile")}
-                </MenuItem>
-                {user.userType === "guide" && (
-                  <MenuItem onClick={handleGuidesClick}>
-                    <GuideIcon sx={{ mr: 1 }} />
-                    {t("header.guideManagement")}
-                  </MenuItem>
-                )}
-                <MenuItem onClick={handleChatClick}>
-                  <ChatIcon sx={{ mr: 1 }} />
-                  {t("header.chat")}
-                </MenuItem>
-              </Menu>
             </>
           ) : (
             <IconButton

@@ -19,6 +19,8 @@ import {
   Add as AddIcon,
   Chat as ChatIcon,
   Person as PersonIcon,
+  SmartToy as AIIcon,
+  AccountCircle as GuideIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Chat, User } from "@/types";
@@ -103,6 +105,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const preview = firstMessage ? firstMessage.content : "";
             const isSelected = chat.id === currentChatId;
 
+            // Chat type icon and color
+            const isAIChat = chat.chatType === "ai";
+            const ChatTypeIcon = isAIChat ? AIIcon : GuideIcon;
+            const chatTypeColor = isAIChat ? "info.main" : "success.main";
+
             return (
               <ListItem key={chat.id} disablePadding sx={{ mb: 0.5 }}>
                 <ListItemButton
@@ -132,7 +139,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       mb: 0.5,
                     }}
                   >
-                    <ChatIcon sx={{ fontSize: 16, opacity: 0.7 }} />
+                    <ChatTypeIcon
+                      sx={{
+                        fontSize: 16,
+                        opacity: 0.7,
+                        color: isSelected ? "inherit" : chatTypeColor,
+                      }}
+                    />
                     <Typography
                       variant="body2"
                       fontWeight={500}
@@ -152,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         fontSize: "0.75rem",
                       }}
                     >
-                      {formatDate(chat.createdAt)}
+                      {formatDate(chat.updatedAt)}
                     </Typography>
                   </Box>
 
