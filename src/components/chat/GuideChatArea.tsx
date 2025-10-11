@@ -56,7 +56,7 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
   websocketUrl = getDefaultWebSocketUrl(),
 }) => {
   const { user: me } = useAuth();
-  const { translateLocation } = useTranslation();
+  const { t, translateLocation } = useTranslation();
 
   // 채팅 상대방 결정: 내가 가이드면 currentUser(유저), 내가 유저면 guide
   const isGuide = me?.userType === "guide";
@@ -172,7 +172,7 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
         }}
       >
         <Typography variant="body1" color="text.secondary">
-          가이드를 선택하여 채팅을 시작하세요
+          {t("chat.selectGuide")}
         </Typography>
       </Box>
     );
@@ -241,7 +241,7 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
               disabled={!currentChat.isActive}
               sx={{ height: 36, fontSize: "0.75rem", px: "0.75rem" }}
             >
-              채팅 종료
+              {t("chat.endChat")}
             </Button>
           </Box>
         </Toolbar>
@@ -250,7 +250,7 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
       {/* Connection Status Alert */}
       {!isConnected && currentChat.chatType === "guide" && (
         <Alert severity="warning">
-          연결이 끊어졌습니다. 재연결을 시도 중입니다...
+          {t("chat.reconnecting")}
         </Alert>
       )}
 
@@ -281,9 +281,9 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
         placeholder={
           currentChat.chatType === "guide"
             ? isConnected
-              ? `${guide.nickname}님에게 메시지를 보내세요...`
-              : "연결을 기다리는 중..."
-            : "메시지를 입력하세요..."
+              ? t("chat.messagePlaceholder", { name: guide.nickname })
+              : t("chat.connecting")
+            : t("chat.typeMessage")
         }
       />
 
