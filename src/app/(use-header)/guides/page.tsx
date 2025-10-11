@@ -7,17 +7,12 @@ import {
   Container,
   Typography,
   Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Chip,
   Card,
   CardContent,
   Skeleton,
   Alert,
   CircularProgress,
-  SelectChangeEvent,
 } from "@mui/material";
 import {
   LocationOn as LocationIcon,
@@ -31,11 +26,57 @@ import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { GuideResponse } from "@/lib/generated";
 
+// 지역 타입 (GuideResponse의 location과 동일)
+type LocationType = NonNullable<GuideResponse["location"]>;
+
+// 지역 enum과 한글 매핑
+const LOCATION_LABELS: Record<string, string> = {
+  SEOUL: "서울",
+  BUSAN: "부산",
+  DAEGU: "대구",
+  INCHEON: "인천",
+  GWANGJU: "광주",
+  DAEJEON: "대전",
+  ULSAN: "울산",
+  SEJONG: "세종",
+  GYEONGGI: "경기",
+  GANGWON: "강원",
+  CHUNGCHEONGBUK: "충북",
+  CHUNGCHEONGNAM: "충남",
+  JEOLLABUK: "전북",
+  JEOLLANAM: "전남",
+  GYEONGSANGBUK: "경북",
+  GYEONGSANGNAM: "경남",
+  JEJU: "제주",
+};
+
+const LOCATIONS: LocationType[] = [
+  "SEOUL",
+  "BUSAN",
+  "DAEGU",
+  "INCHEON",
+  "GWANGJU",
+  "DAEJEON",
+  "ULSAN",
+  "SEJONG",
+  "GYEONGGI",
+  "GANGWON",
+  "CHUNGCHEONGBUK",
+  "CHUNGCHEONGNAM",
+  "JEOLLABUK",
+  "JEOLLANAM",
+  "GYEONGSANGBUK",
+  "GYEONGSANGNAM",
+  "JEJU",
+];
+
 export default function GuidesPage() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, translateLocation } = useTranslation();
   const { user } = useAuth();
-  const [selectedLocation, setSelectedLocation] = useState<string>("all");
+  const [selectedLocations, setSelectedLocations] = useState<Set<string>>(
+    new Set()
+  );
 
   // 가이드 목록 조회
   const { data: guidesResponse, isLoading, error } = useGetAllGuides();
@@ -56,24 +97,15 @@ export default function GuidesPage() {
   // 가이드 데이터 추출
   const guides = guidesResponse?.data || [];
 
-  // 고유한 지역 목록 추출
-  const locations = useMemo(() => {
-    const uniqueLocations = new Set<string>();
-    guides.forEach((guide) => {
-      if (guide.location) {
-        uniqueLocations.add(guide.location);
-      }
-    });
-    return Array.from(uniqueLocations).sort();
-  }, [guides]);
-
   // 필터링된 가이드 목록
   const filteredGuides = useMemo(() => {
-    if (selectedLocation === "all") {
+    if (selectedLocations.size === 0) {
       return guides;
     }
-    return guides.filter((guide) => guide.location === selectedLocation);
-  }, [guides, selectedLocation]);
+    return guides.filter(
+      (guide) => guide.location && selectedLocations.has(guide.location)
+    );
+  }, [guides, selectedLocations]);
 
   // 가이드 프로필 보기
   const handleGuideSelect = (guide: GuideResponse) => {
@@ -93,9 +125,21 @@ export default function GuidesPage() {
     });
   };
 
-  // 지역 선택 핸들러
-  const handleLocationChange = (event: SelectChangeEvent<string>) => {
-    setSelectedLocation(event.target.value);
+  // 전체 체크박스 핸들러
+  const handleAllToggle = () => {
+    // 전체를 클릭하면 모든 선택 해제
+    setSelectedLocations(new Set());
+  };
+
+  // 개별 지역 체크박스 핸들러
+  const handleLocationToggle = (location: string) => {
+    const newSelected = new Set(selectedLocations);
+    if (newSelected.has(location)) {
+      newSelected.delete(location);
+    } else {
+      newSelected.add(location);
+    }
+    setSelectedLocations(newSelected);
   };
 
   // 로딩 상태
@@ -138,7 +182,7 @@ export default function GuidesPage() {
           <LanguageSelector />
         </Box>
         <Alert severity="error" sx={{ mb: 3 }}>
-          가이드 목록을 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.
+          {t("guide.loadError")}
         </Alert>
       </Container>
     );
@@ -146,89 +190,70 @@ export default function GuidesPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Language Selector */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-        <LanguageSelector />
-      </Box>
-
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <ExploreIcon sx={{ fontSize: 40, mr: 2, color: "primary.main" }} />
           <Typography variant="h4" component="h1" fontWeight={600}>
-            가이드 찾기
+            {t("guide.findGuides")}
           </Typography>
         </Box>
         <Typography variant="body1" color="text.secondary">
-          전문 가이드와 함께 특별한 여행을 만들어보세요
+          {t("guide.findGuidesDescription")}
         </Typography>
       </Box>
 
       {/* Filter Section */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="location-filter-label">지역</InputLabel>
-                <Select
-                  labelId="location-filter-label"
-                  id="location-filter"
-                  value={selectedLocation}
-                  label="지역"
-                  onChange={handleLocationChange}
-                >
-                  <MenuItem value="all">
-                    <em>전체 지역</em>
-                  </MenuItem>
-                  {locations.map((location) => (
-                    <MenuItem key={location} value={location}>
-                      {location}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={8}>
-              <Box
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <LocationIcon sx={{ fontSize: 20, mr: 1, color: "primary.main" }} />
+              <Typography variant="h6" fontWeight={600}>
+                {t("guide.locationFilter")}
+              </Typography>
+            </Box>
+
+            {/* 칩 형태의 필터 */}
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1,
+              }}
+            >
+              {/* 전체 칩 */}
+              <Chip
+                label={t("guide.all")}
+                onClick={handleAllToggle}
+                color={selectedLocations.size === 0 ? "primary" : "default"}
+                variant={selectedLocations.size === 0 ? "filled" : "outlined"}
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: 1,
+                  fontWeight: selectedLocations.size === 0 ? 600 : 400,
                 }}
-              >
-                <LocationIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-                <Typography variant="body2" color="text.secondary">
-                  필터:
-                </Typography>
-                {selectedLocation === "all" ? (
-                  <Chip
-                    label="전체"
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                  />
-                ) : (
-                  <Chip
-                    label={selectedLocation}
-                    size="small"
-                    color="primary"
-                    onDelete={() => setSelectedLocation("all")}
-                  />
-                )}
-              </Box>
-            </Grid>
-          </Grid>
+              />
+
+              {/* 지역별 칩 */}
+              {LOCATIONS.map((location) => (
+                <Chip
+                  key={location}
+                  label={translateLocation(location)}
+                  onClick={() => handleLocationToggle(location)}
+                  color={selectedLocations.has(location) ? "primary" : "default"}
+                  variant={selectedLocations.has(location) ? "filled" : "outlined"}
+                />
+              ))}
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
       {/* Results Summary */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h6" color="text.secondary">
-          {selectedLocation === "all"
-            ? `총 ${guides.length}명의 가이드`
-            : `${selectedLocation} 지역: ${filteredGuides.length}명의 가이드`}
+          {selectedLocations.size === 0
+            ? t("guide.totalGuides", { count: guides.length })
+            : t("guide.selectedGuides", { count: filteredGuides.length })}
         </Typography>
       </Box>
 
@@ -263,10 +288,10 @@ export default function GuidesPage() {
         >
           <LocationIcon sx={{ fontSize: 80, color: "text.disabled", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            해당 지역에 가이드가 없습니다
+            {t("guide.noGuidesInRegion")}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            다른 지역을 선택해보세요
+            {t("guide.tryOtherRegions")}
           </Typography>
         </Box>
       )}
@@ -296,7 +321,7 @@ export default function GuidesPage() {
             }}
           >
             <CircularProgress sx={{ mb: 2 }} />
-            <Typography variant="body1">채팅방을 생성하는 중...</Typography>
+            <Typography variant="body1">{t("guide.creatingChatRoom")}</Typography>
           </Box>
         </Box>
       )}

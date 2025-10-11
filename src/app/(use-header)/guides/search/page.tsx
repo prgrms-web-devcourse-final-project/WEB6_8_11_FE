@@ -35,6 +35,7 @@ import { Header } from "@/components/common/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetAllGuides, type GuideResponse } from "@/hooks/api";
 import { useStartChat } from "@/hooks/api/useUserChat";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface GuideSearchFilters {
   locations: string[];
@@ -66,6 +67,7 @@ function GuideSearchResults() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { user } = useAuth();
+  const { translateLocation } = useTranslation();
 
   const query = searchParams.get("q") || "";
 
@@ -266,7 +268,7 @@ function GuideSearchResults() {
             {availableLocations.map((location) => (
               <Chip
                 key={location}
-                label={LOCATION_LABELS[location] || location}
+                label={translateLocation(location)}
                 onClick={() => handleLocationToggle(location)}
                 color={
                   filters.locations.includes(location) ? "primary" : "default"

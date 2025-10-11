@@ -16,6 +16,7 @@ import {
   LocationOn as LocationIcon,
 } from '@mui/icons-material';
 import { GuideProfile } from '@/types';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface GuideCardProps {
   guide: GuideProfile;
@@ -30,6 +31,7 @@ export const GuideCard: React.FC<GuideCardProps> = ({
   onChatStart,
   variant = 'default',
 }) => {
+  const { t, translateLocation } = useTranslation();
   const isCompact = variant === 'compact';
 
   return (
@@ -84,7 +86,7 @@ export const GuideCard: React.FC<GuideCardProps> = ({
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <LocationIcon sx={{ fontSize: 18, mr: 0.5, color: 'primary.main' }} />
             <Chip
-              label={guide.location}
+              label={translateLocation(guide.location)}
               size="small"
               color="primary"
               variant="outlined"
@@ -130,7 +132,7 @@ export const GuideCard: React.FC<GuideCardProps> = ({
             fontWeight: 600,
           }}
         >
-          대화하기
+          {t("guide.startChat")}
         </Button>
       </CardActions>
     </Card>

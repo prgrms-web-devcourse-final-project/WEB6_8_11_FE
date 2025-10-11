@@ -25,11 +25,13 @@ import { Header } from "@/components/common/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetGuideById } from "@/hooks/api";
 import { useStartChat } from "@/hooks/api/useUserChat";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function GuideDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { user } = useAuth();
+  const { translateLocation } = useTranslation();
   const guideId = parseInt(params.guideId as string);
 
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
@@ -172,7 +174,7 @@ export default function GuideDetailPage() {
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", sm: "flex-start" } }}>
                     <LocationIcon sx={{ fontSize: 18, mr: 0.5, color: "primary.main" }} />
                     <Chip
-                      label={guide.location}
+                      label={translateLocation(guide.location)}
                       size="medium"
                       color="primary"
                       variant="outlined"
