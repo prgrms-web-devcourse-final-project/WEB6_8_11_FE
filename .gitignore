@@ -34,3 +34,5 @@ next-env.d.ts
 
 # generated code (optional - usually committed)
 # /src/lib/generated
+
+.env

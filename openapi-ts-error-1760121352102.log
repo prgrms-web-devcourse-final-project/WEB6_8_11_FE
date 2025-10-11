@@ -1,0 +1,29 @@
+[2025-10-10T18:35:52.102Z] Error: Error parsing /Users/joyeongjae/projects/WEB6_8_11_FE/api-specification.yaml: unidentified alias "/*:" (38:17)
+
+ 35 |         200:
+ 36 |           description: OK
+ 37 |           content:
+ 38 |             */*:
+----------------------^
+ 39 |               schema:
+ 40 |                 $ref: "#/components/schemas/Api ...
+Stack:
+JSONParserError: Error parsing /Users/joyeongjae/projects/WEB6_8_11_FE/api-specification.yaml: unidentified alias "/*:" (38:17)
+
+ 35 |         200:
+ 36 |           description: OK
+ 37 |           content:
+ 38 |             */*:
+----------------------^
+ 39 |               schema:
+ 40 |                 $ref: "#/components/schemas/Api ...
+    at Object.handler (/Users/joyeongjae/projects/WEB6_8_11_FE/node_modules/.pnpm/@hey-api+json-schema-ref-parser@1.2.0/node_modules/@hey-api/json-schema-ref-parser/dist/lib/parsers/yaml.js:24:19)
+    at runNextPlugin (/Users/joyeongjae/projects/WEB6_8_11_FE/node_modules/.pnpm/@hey-api+json-schema-ref-parser@1.2.0/node_modules/@hey-api/json-schema-ref-parser/dist/lib/util/plugins.js:24:45)
+    at /Users/joyeongjae/projects/WEB6_8_11_FE/node_modules/.pnpm/@hey-api+json-schema-ref-parser@1.2.0/node_modules/@hey-api/json-schema-ref-parser/dist/lib/util/plugins.js:43:9
+    at new Promise (<anonymous>)
+    at Object.run (/Users/joyeongjae/projects/WEB6_8_11_FE/node_modules/.pnpm/@hey-api+json-schema-ref-parser@1.2.0/node_modules/@hey-api/json-schema-ref-parser/dist/lib/util/plugins.js:16:12)
+    at parseFile (/Users/joyeongjae/projects/WEB6_8_11_FE/node_modules/.pnpm/@hey-api+json-schema-ref-parser@1.2.0/node_modules/@hey-api/json-schema-ref-parser/dist/lib/parse.js:72:30)
+    at $RefParser.parse (/Users/joyeongjae/projects/WEB6_8_11_FE/node_modules/.pnpm/@hey-api+json-schema-ref-parser@1.2.0/node_modules/@hey-api/json-schema-ref-parser/dist/lib/index.js:230:68)
+    at async $RefParser.bundle (/Users/joyeongjae/projects/WEB6_8_11_FE/node_modules/.pnpm/@hey-api+json-schema-ref-parser@1.2.0/node_modules/@hey-api/json-schema-ref-parser/dist/lib/index.js:132:9)
+    at async na (/Users/joyeongjae/projects/WEB6_8_11_FE/node_modules/.pnpm/@hey-api+openapi-ts@0.85.0_typescript@5.9.2/node_modules/@hey-api/openapi-ts/dist/index.cjs:47:9979)
+    at async /Users/joyeongjae/projects/WEB6_8_11_FE/node_modules/.pnpm/@hey-api+openapi-ts@0.85.0_typescript@5.9.2/node_modules/@hey-api/openapi-ts/dist/index.cjs:1362:6888

@@ -40,6 +40,12 @@ interface GuideChatAreaProps {
   websocketUrl?: string;
 }
 
+const getDefaultWebSocketUrl = () => {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  return `${baseUrl}/ws/userchat`;
+};
+
 export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
   currentChat,
   guide,
@@ -47,7 +53,7 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
   onMenuClick,
   onEndChat,
   showMenuButton = false,
-  websocketUrl = "http://localhost:8080/ws/userchat",
+  websocketUrl = getDefaultWebSocketUrl(),
 }) => {
   const { user: me } = useAuth();
   const { translateLocation } = useTranslation();
