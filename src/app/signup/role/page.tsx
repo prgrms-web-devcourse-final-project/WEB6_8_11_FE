@@ -28,6 +28,7 @@ export default function SignupRole() {
     onSuccess: (response) => {
       const accessToken = response.data?.data?.accessToken;
       if (accessToken) {
+        console.log("accessToken", accessToken);
         setAccessToken(accessToken);
         clearRegisterToken();
         handleLoginRedirect();
@@ -67,8 +68,9 @@ export default function SignupRole() {
 
   const handleRoleSelect = async (role: UserRole) => {
     setError(null);
+    const token = searchParams.get("token");
     try {
-      await selectRoleMutation.mutateAsync({ role });
+      await selectRoleMutation.mutateAsync({ role, token: token || undefined });
     } catch (err) {
       // Error already handled in onError
     }

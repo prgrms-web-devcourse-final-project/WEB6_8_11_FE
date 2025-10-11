@@ -1,24 +1,29 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { User, AuthState, OAuthProvider } from '@/types';
-import { useGetMe, useDeleteMe } from './api/useUsers';
-import { useLogout as useLogoutMutation, useSelectRole, type UserRole } from './api/useAuth';
-import { getAccessToken } from '@/lib/api/request';
-import type { UserResponse as ApiUser } from '@/lib/generated';
+import { useRouter } from "next/navigation";
+import { User, AuthState, OAuthProvider } from "@/types";
+import { useGetMe, useDeleteMe } from "./api/useUsers";
+import {
+  useLogout as useLogoutMutation,
+  useSelectRole,
+  type UserRole,
+} from "./api/useAuth";
+import { getAccessToken } from "@/lib/api/request";
+import type { UserResponse as ApiUser } from "@/lib/generated";
+import { useEffect } from "react";
 
 /**
  * Convert API User to local User type
  */
 const convertApiUserToUser = (apiUser: ApiUser): User => {
   return {
-    id: apiUser.id?.toString() || '',
-    name: apiUser.nickname || apiUser.email || 'User',
-    email: apiUser.email || '',
+    id: apiUser.id?.toString() || "",
+    name: apiUser.nickname || apiUser.email || "User",
+    email: apiUser.email || "",
     avatar: apiUser.profileImageUrl || undefined,
     joinDate: new Date(), // API doesn't provide joinDate, use current date
-    provider: 'google', // Default provider, can be updated when API provides this field
-    userType: apiUser.role === 'GUIDE' ? 'guide' : 'regular',
+    provider: "google", // Default provider, can be updated when API provides this field
+    userType: apiUser.role === "GUIDE" ? "guide" : "regular",
     nickname: apiUser.nickname || undefined,
   };
 };
@@ -31,7 +36,7 @@ export const useAuth = () => {
     data: apiUserResponse,
     isLoading,
     error,
-    refetch: refetchUser
+    refetch: refetchUser,
   } = useGetMe({
     enabled: !!getAccessToken(), // Only fetch if token exists
     retry: false,
@@ -40,13 +45,13 @@ export const useAuth = () => {
   // Mutations
   const logoutMutation = useLogoutMutation({
     onSuccess: () => {
-      router.push('/login');
+      router.push("/login");
     },
   });
 
   const deleteMutation = useDeleteMe({
     onSuccess: () => {
-      router.push('/login');
+      router.push("/login");
     },
   });
 
@@ -56,7 +61,7 @@ export const useAuth = () => {
   const apiUser = apiUserResponse?.data?.data;
   const user = apiUser ? convertApiUserToUser(apiUser) : null;
   const isAuthenticated = !!user && !!getAccessToken();
-  const isNewUser = apiUser?.role === 'PENDING';
+  const isNewUser = apiUser?.role === "PENDING";
 
   const authState: AuthState = {
     user,
@@ -68,12 +73,13 @@ export const useAuth = () => {
    * OAuth login - redirect to backend OAuth endpoint
    */
   const login = async (provider: OAuthProvider): Promise<void> => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     const redirectUrl = `${baseUrl}/oauth2/authorization/${provider}`;
 
     // Store the intended destination for post-login redirect
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('postLoginRedirect', window.location.pathname);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("postLoginRedirect", window.location.pathname);
     }
 
     window.location.href = redirectUrl;
