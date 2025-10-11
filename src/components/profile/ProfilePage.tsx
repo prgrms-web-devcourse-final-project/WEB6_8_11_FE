@@ -71,12 +71,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onDeleteAccount,
   onBack,
 }) => {
-  const { t } = useTranslation();
+  const { t, translateLocation } = useTranslation();
   const queryClient = useQueryClient();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState(0);
+  const isGuide = user.userType === "guide";
+  const [currentTab, setCurrentTab] = useState(isGuide ? 0 : 1);
   const [currentLanguage, setCurrentLanguage] = useState<Language>(() => {
     if (typeof window !== "undefined") {
       return (localStorage.getItem("language") as Language) || "ko";
@@ -84,7 +85,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     return "ko";
   });
 
-  const isGuide = user.userType === "guide";
   const userId = Number(user.id);
 
   // Fetch guide-specific data if user is a guide
@@ -299,11 +299,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {/* Location (for guides) and Join Date */}
           {isGuide && guideProfile?.location && (
             <Typography variant="body1" color="text.secondary" sx={{ mb: 0.5 }}>
-              {LOCATION_LABELS[guideProfile.location as LocationCode] || guideProfile.location}
+              {translateLocation(guideProfile.location)}
             </Typography>
           )}
           <Typography variant="body2" color="text.secondary">
-            Joined in {user.joinDate.getFullYear()}
+            {t("profile.joinedIn")} {user.joinDate.getFullYear()}
           </Typography>
 
           {/* Edit Profile Button */}
@@ -325,7 +325,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               },
             }}
           >
-            Edit Profile
+            {t("profile.editProfile")}
           </Button>
         </Box>
 
@@ -348,8 +348,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               },
             }}
           >
-            <Tab label="About" />
-            <Tab label="Settings" />
+            <Tab label={t("profile.tabs.about")} sx={{ display: isGuide ? "block" : "none" }} />
+            <Tab label={t("profile.tabs.settings")} />
           </Tabs>
         </Box>
 
@@ -398,7 +398,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                           color="text.secondary"
                           sx={{ mb: 4, fontStyle: "italic" }}
                         >
-                          No description available.
+                          {t("profile.noDescriptionAvailable")}
                         </Typography>
                       )}
 
@@ -450,9 +450,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                                 color="text.secondary"
                               >
                                 {ratingSummary.totalRatings}{" "}
-                                {ratingSummary.totalRatings === 1
-                                  ? "review"
-                                  : "reviews"}
+                                {t("profile.review")}
+                                {ratingSummary.totalRatings !== 1 && "s"}
                               </Typography>
                             </Box>
 
@@ -503,6 +502,87 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                               ))}
                             </Box>
                           </Box>
+
+                          {/* Recent Reviews Section */}
+                          {ratingSummary.ratings &&
+                            ratingSummary.ratings.length > 0 && (
+                              <Box sx={{ mt: 5 }}>
+                                <Typography
+                                  variant="h5"
+                                  fontWeight={700}
+                                  gutterBottom
+                                  sx={{ mb: 3 }}
+                                >
+                                  {t("profile.recentReviews")}
+                                </Typography>
+                                <Stack spacing={3}>
+                                  {ratingSummary.ratings
+                                    .slice(0, 10)
+                                    .map((review) => (
+                                      <Box
+                                        key={review.id}
+                                        sx={{
+                                          p: 3,
+                                          borderRadius: 2,
+                                          bgcolor: "grey.50",
+                                          border: "1px solid",
+                                          borderColor: "divider",
+                                        }}
+                                      >
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                            mb: 1.5,
+                                          }}
+                                        >
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 1,
+                                            }}
+                                          >
+                                            <Typography
+                                              variant="subtitle1"
+                                              fontWeight={600}
+                                            >
+                                              {review.raterNickname}
+                                            </Typography>
+                                            <Rating
+                                              value={review.rating}
+                                              readOnly
+                                              size="small"
+                                            />
+                                          </Box>
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            {new Date(
+                                              review.createdAt
+                                            ).toLocaleDateString("en-US", {
+                                              year: "numeric",
+                                              month: "short",
+                                              day: "numeric",
+                                            })}
+                                          </Typography>
+                                        </Box>
+                                        {review.comment && (
+                                          <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                            sx={{ lineHeight: 1.6 }}
+                                          >
+                                            {review.comment}
+                                          </Typography>
+                                        )}
+                                      </Box>
+                                    ))}
+                                </Stack>
+                              </Box>
+                            )}
                         </Box>
                       ) : (
                         <Box sx={{ mt: 4 }}>
@@ -691,7 +771,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       >
         <DialogTitle>{t("auth.logout")}</DialogTitle>
         <DialogContent>
-          <DialogContentText>정말로 로그아웃하시겠습니까?</DialogContentText>
+          <DialogContentText>{t("profile.logoutConfirm")}</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setLogoutDialogOpen(false)} color="inherit">
@@ -719,11 +799,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
-            이 작업은 되돌릴 수 없습니다!
+            {t("profile.deleteWarning")}
           </Alert>
           <DialogContentText>
-            계정을 삭제하면 모든 채팅 기록과 개인정보가 영구적으로 삭제됩니다.
-            정말로 계정을 삭제하시겠습니까?
+            {t("profile.deleteConfirm")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -761,7 +840,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             }}
           >
             <Typography variant="h6" fontWeight={700}>
-              Edit Profile
+              {t("profile.editProfile")}
             </Typography>
             <IconButton
               onClick={() => setEditProfileOpen(false)}
@@ -813,23 +892,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               </IconButton>
             </Box>
             <Typography variant="caption" color="text.secondary">
-              Click to change profile photo
+              {t("profile.changePhoto")}
             </Typography>
           </Box>
 
           {/* Form Fields */}
           <Stack spacing={3}>
             <TextField
-              label="Email"
+              label={t("profile.emailLabel")}
               fullWidth
               value={user.email}
               disabled
               variant="outlined"
-              helperText="Email cannot be changed"
+              helperText={t("profile.emailCannotChange")}
             />
 
             <TextField
-              label="Nickname"
+              label={t("profile.nicknameLabel")}
               fullWidth
               value={editForm.nickname}
               onChange={(e) =>
@@ -842,7 +921,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             {isGuide && (
               <>
                 <FormControl fullWidth variant="outlined">
-                  <InputLabel>Location</InputLabel>
+                  <InputLabel>{t("profile.locationLabel")}</InputLabel>
                   <Select
                     value={editForm.location || ""}
                     onChange={(e) =>
@@ -851,15 +930,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         location: e.target.value as LocationCode | "",
                       })
                     }
-                    label="Location"
+                    label={t("profile.locationLabel")}
                   >
                     <MenuItem value="">
-                      <em>선택 안 함</em>
+                      <em>{t("profile.locationNone")}</em>
                     </MenuItem>
                     {(Object.keys(LOCATION_LABELS) as LocationCode[]).map(
                       (code) => (
                         <MenuItem key={code} value={code}>
-                          {LOCATION_LABELS[code]}
+                          {translateLocation(code)}
                         </MenuItem>
                       )
                     )}
@@ -867,7 +946,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 </FormControl>
 
                 <TextField
-                  label="Description"
+                  label={t("profile.descriptionLabel")}
                   fullWidth
                   multiline
                   rows={4}
@@ -876,9 +955,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     setEditForm({ ...editForm, description: e.target.value })
                   }
                   variant="outlined"
-                  helperText={`${editForm.description.length}/500 characters`}
+                  helperText={t("profile.charactersCount", { count: editForm.description.length })}
                   inputProps={{ maxLength: 500 }}
-                  placeholder="Tell visitors about yourself and your expertise..."
+                  placeholder={t("profile.descriptionPlaceholder")}
                 />
               </>
             )}
@@ -895,7 +974,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               fontWeight: 600,
             }}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleEditProfileSave}
@@ -910,7 +989,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               },
             }}
           >
-            Save Changes
+            {t("profile.saveChanges")}
           </Button>
         </DialogActions>
       </Dialog>
