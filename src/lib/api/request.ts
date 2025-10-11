@@ -16,6 +16,8 @@ export const axiosInstance: AxiosInstance = axios.create({
     "Content-Type": "application/json",
   },
   withCredentials: true, // For cookies (refresh token)
+  // NOTE: Axios does not support a 'credentials' option in its config.
+  // To send credentials (cookies), use withCredentials: true as above.
 });
 
 // Request Interceptor - Add Access Token

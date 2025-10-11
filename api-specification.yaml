@@ -35,7 +35,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseRateResponse"
   /api/rate/aichat/sessions/{sessionId}:
@@ -62,7 +62,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseRateResponse"
   /api/userchat/rooms/{roomId}/messages:
@@ -97,7 +97,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseListChatMessageResponse"
     post:
@@ -122,7 +122,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseChatMessageResponse"
   /api/userchat/rooms/start:
@@ -140,7 +140,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseChatRoomResponse"
   /api/auth/role:
@@ -159,7 +159,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseLoginResponse"
   /api/auth/refresh:
@@ -178,7 +178,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseAccessTokenResponse"
   /api/auth/logout:
@@ -191,7 +191,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseUnit"
   /api/aichat/sessions:
@@ -203,7 +203,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseListSessionsResponse"
     post:
@@ -214,7 +214,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseSessionsResponse"
   /api/aichat/sessions/{sessionId}/messages:
@@ -234,7 +234,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseListSessionMessagesResponse"
     post:
@@ -259,7 +259,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseAiChatResponse"
   /api/users/me:
@@ -272,7 +272,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseUserResponse"
     delete:
@@ -284,7 +284,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseUnit"
     patch:
@@ -302,7 +302,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseUserResponse"
   /api/guides/me:
@@ -321,7 +321,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseGuideResponse"
   /api/aichat/sessions/{sessionId}/title:
@@ -347,7 +347,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseUpdateSessionTitleResponse"
   /weather/test2:
@@ -359,7 +359,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 type: array
                 items:
@@ -373,7 +373,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 type: array
                 items:
@@ -402,7 +402,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseChatRoomListResponse"
   /api/userchat/rooms/{roomId}:
@@ -422,7 +422,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseChatRoomResponse"
     delete:
@@ -441,7 +441,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseUnit"
   /api/rate/guides/my:
@@ -454,7 +454,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseGuideRatingSummaryResponse"
   /api/rate/admin/aichat/sessions:
@@ -474,7 +474,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponsePageRateResponse"
   /api/guides:
@@ -487,7 +487,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseListGuideResponse"
   /api/guides/{guideId}:
@@ -508,7 +508,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseGuideResponse"
   /api/aichat/sessions/{sessionId}:
@@ -528,7 +528,7 @@ paths:
         200:
           description: OK
           content:
-            */*:
+            '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseUnit"
 components:
