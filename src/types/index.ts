@@ -1,46 +1,46 @@
 // Location enum types (matches API spec)
 export type LocationCode =
-  | 'SEOUL'
-  | 'BUSAN'
-  | 'DAEGU'
-  | 'INCHEON'
-  | 'GWANGJU'
-  | 'DAEJEON'
-  | 'ULSAN'
-  | 'SEJONG'
-  | 'GYEONGGI'
-  | 'GANGWON'
-  | 'CHUNGCHEONGBUK'
-  | 'CHUNGCHEONGNAM'
-  | 'JEOLLABUK'
-  | 'JEOLLANAM'
-  | 'GYEONGSANGBUK'
-  | 'GYEONGSANGNAM'
-  | 'JEJU';
+  | "SEOUL"
+  | "BUSAN"
+  | "DAEGU"
+  | "INCHEON"
+  | "GWANGJU"
+  | "DAEJEON"
+  | "ULSAN"
+  | "SEJONG"
+  | "GYEONGGI"
+  | "GANGWON"
+  | "CHUNGCHEONGBUK"
+  | "CHUNGCHEONGNAM"
+  | "JEOLLABUK"
+  | "JEOLLANAM"
+  | "GYEONGSANGBUK"
+  | "GYEONGSANGNAM"
+  | "JEJU";
 
 // Location labels in Korean
 export const LOCATION_LABELS: Record<LocationCode, string> = {
-  SEOUL: '서울',
-  BUSAN: '부산',
-  DAEGU: '대구',
-  INCHEON: '인천',
-  GWANGJU: '광주',
-  DAEJEON: '대전',
-  ULSAN: '울산',
-  SEJONG: '세종',
-  GYEONGGI: '경기',
-  GANGWON: '강원',
-  CHUNGCHEONGBUK: '충청북도',
-  CHUNGCHEONGNAM: '충청남도',
-  JEOLLABUK: '전북',
-  JEOLLANAM: '전남',
-  GYEONGSANGBUK: '경북',
-  GYEONGSANGNAM: '경남',
-  JEJU: '제주',
+  SEOUL: "서울",
+  BUSAN: "부산",
+  DAEGU: "대구",
+  INCHEON: "인천",
+  GWANGJU: "광주",
+  DAEJEON: "대전",
+  ULSAN: "울산",
+  SEJONG: "세종",
+  GYEONGGI: "경기",
+  GANGWON: "강원",
+  CHUNGCHEONGBUK: "충청북도",
+  CHUNGCHEONGNAM: "충청남도",
+  JEOLLABUK: "전북",
+  JEOLLANAM: "전남",
+  GYEONGSANGBUK: "경북",
+  GYEONGSANGNAM: "경남",
+  JEJU: "제주",
 };
 
 // User related types
-export type UserType = 'regular' | 'guide';
+export type UserType = "regular" | "guide";
 
 export interface User {
   id: string;
@@ -48,7 +48,7 @@ export interface User {
   email: string;
   avatar?: string;
   joinDate: Date;
-  provider: 'google' | 'kakao' | 'naver';
+  provider: "google" | "kakao" | "naver";
   userType: UserType;
   nickname?: string; // 닉네임 추가 (특히 가이드용)
 }
@@ -59,14 +59,14 @@ export interface GuideProfile {
   email: string;
   nickname: string; // 가이드 닉네임 (필수)
   profileImageUrl?: string; // API field name
-  role: 'USER' | 'ADMIN' | 'GUIDE' | 'PENDING';
+  role: "USER" | "ADMIN" | "GUIDE" | "PENDING";
   location?: LocationCode; // 가이드 활동 지역 (Enum 타입)
   description?: string; // 가이드 소개
   // Legacy User fields for compatibility
   name?: string; // Fallback to nickname
-  userType?: 'guide';
+  userType?: "guide";
   joinDate?: Date;
-  provider?: 'google' | 'kakao' | 'naver';
+  provider?: "google" | "kakao" | "naver";
   // Additional fields not in API but used in UI (optional for future implementation)
   isOnline?: boolean;
   specialties?: string[];
@@ -76,7 +76,7 @@ export interface GuideProfile {
 }
 
 // Chat related types
-export type ChatType = 'ai' | 'guide';
+export type ChatType = "ai" | "guide";
 
 export interface Chat {
   id: string;
@@ -94,7 +94,8 @@ export interface Chat {
 export interface Message {
   id: string;
   content: string;
-  sender: 'user' | 'ai' | 'guide';
+  sender: "user" | "ai" | "guide";
+  senderId?: number; // 실제 발신자 ID
   timestamp: Date;
   readAt?: Date; // 읽음 확인 시간
 }
@@ -122,7 +123,7 @@ export interface GuideReview {
 }
 
 // Language support
-export type Language = 'ko' | 'en' | 'zh-CN' | 'ja' | 'es';
+export type Language = "ko" | "en" | "zh-CN" | "ja" | "es";
 
 // Authentication types
 export interface AuthState {
@@ -148,7 +149,7 @@ export interface ApiResponse<T> {
 }
 
 // OAuth provider types
-export type OAuthProvider = 'google' | 'kakao' | 'naver';
+export type OAuthProvider = "google" | "kakao" | "naver";
 
 export interface OAuthConfig {
   clientId: string;
@@ -158,7 +159,7 @@ export interface OAuthConfig {
 
 // WebSocket related types
 export interface SocketMessage {
-  type: 'message' | 'typing' | 'read' | 'join' | 'leave' | 'error';
+  type: "message" | "typing" | "read" | "join" | "leave" | "error";
   data: any;
   timestamp: Date;
 }
@@ -175,8 +176,8 @@ export interface GuideSearchFilters {
   languages?: string[];
   minRating?: number;
   isOnlineOnly?: boolean;
-  sortBy?: 'rating' | 'reviews' | 'name' | 'online';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "rating" | "reviews" | "name" | "online";
+  sortOrder?: "asc" | "desc";
 }
 
 export interface GuideSearchResult {
@@ -207,6 +208,7 @@ export const convertChatMessageToMessage = (
     id: apiMessage.id?.toString() || "",
     content: apiMessage.content || "",
     sender: "user", // Default to user, update based on senderId logic if needed
+    senderId: apiMessage.senderId,
     timestamp: new Date(apiMessage.createdAt || Date.now()),
     readAt: undefined, // readAt not available in current API response
   };
