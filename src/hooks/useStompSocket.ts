@@ -50,7 +50,16 @@ export const useStompSocket = ({
 
     // Create STOMP client with SockJS transport
     const client = new Client({
-      webSocketFactory: () => new SockJS(url) as any,
+      webSocketFactory: () => {
+        console.log(`[STOMP] Creating SockJS connection to: ${url}`);
+        const socket = new SockJS(url);
+
+        // Add debug listeners
+        socket.onopen = () => console.log("[STOMP] SockJS opened");
+        socket.onerror = (e) => console.error("[STOMP] SockJS error:", e);
+
+        return socket as any;
+      },
 
       connectHeaders: {
         // Add JWT token from localStorage if available
@@ -162,14 +171,17 @@ export const useStompSocket = ({
     [roomId, onError]
   );
 
-  // Connect on mount or when dependencies change
+  // Connect on mount or when key dependencies change
   useEffect(() => {
+    if (!enabled || !roomId) return;
+
     connect();
 
     return () => {
       disconnect();
     };
-  }, [connect, disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, roomId, url]); // Only reconnect when these change
 
   return {
     isConnected,

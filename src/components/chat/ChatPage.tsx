@@ -22,6 +22,7 @@ import type {
   SessionMessagesResponse,
   ChatRoomResponse,
 } from "@/lib/generated";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ChatPageProps {
   user: User;
@@ -34,11 +35,12 @@ interface ChatPageProps {
  */
 const convertSessionToChat = (
   session: SessionsResponse,
-  messages: SessionMessagesResponse[] = []
+  messages: SessionMessagesResponse[] = [],
+  aiChatLabel: string = "AI Chat"
 ): Chat => {
   return {
     id: `ai-${session.sessionId}` || "",
-    title: session.sessionTitle || "AI 채팅",
+    title: session.sessionTitle || aiChatLabel,
     createdAt: new Date(),
     updatedAt: new Date(),
     chatType: "ai",
@@ -55,10 +57,10 @@ const convertSessionToChat = (
 /**
  * Convert API ChatRoomResponse to local Chat type (Guide Chat)
  */
-const convertRoomToChat = (room: ChatRoomResponse): Chat => {
+const convertRoomToChat = (room: ChatRoomResponse, guideChatLabel: string = "Guide Chat"): Chat => {
   return {
     id: `guide-${room.id}` || "",
-    title: room.title || "가이드 채팅",
+    title: room.title || guideChatLabel,
     createdAt: new Date(room.updatedAt),
     updatedAt: new Date(room.updatedAt),
     chatType: "guide",
@@ -73,6 +75,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   onProfileClick,
   initialChatId,
 }) => {
+  const { t } = useTranslation();
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -153,14 +156,14 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   // Convert sessions to Chat format
   const aiChats = useMemo(() => {
     if (!sessions) return [];
-    return sessions.map((session) => convertSessionToChat(session, []));
-  }, [sessions]);
+    return sessions.map((session) => convertSessionToChat(session, [], t("chat.aiChat")));
+  }, [sessions, t]);
 
   // Convert rooms to Chat format
   const guideChats = useMemo(() => {
     if (!rooms) return [];
-    return rooms.map((room) => convertRoomToChat(room));
-  }, [rooms]);
+    return rooms.map((room) => convertRoomToChat(room, t("chat.guideChat")));
+  }, [rooms, t]);
 
   // Merge and sort all chats by updatedAt
   const chatHistory = useMemo(() => {
@@ -179,15 +182,15 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         (s) => `ai-${s.sessionId}` === currentChatId
       );
       if (!session) return null;
-      return convertSessionToChat(session, messagesData || []);
+      return convertSessionToChat(session, messagesData || [], t("chat.aiChat"));
     } else if (chatType === "guide") {
       const room = rooms?.find((r) => `guide-${r.id}` === currentChatId);
       if (!room) return null;
-      return convertRoomToChat(room);
+      return convertRoomToChat(room, t("chat.guideChat"));
     }
 
     return null;
-  }, [sessions, rooms, currentChatId, messagesData, chatType]);
+  }, [sessions, rooms, currentChatId, messagesData, chatType, t]);
 
   // Set initial chat ID
   useEffect(() => {
@@ -241,7 +244,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({
     }
   };
 
-  const handleEndChat = async (rating: Omit<ChatRating, "id" | "createdAt">) => {
+  const handleEndChat = async (
+    rating: Omit<ChatRating, "id" | "createdAt">
+  ) => {
     try {
       await rateGuideMutation.mutateAsync({
         guideId: parseInt(rating.guideId, 10),
@@ -313,9 +318,8 @@ export const ChatPage: React.FC<ChatPageProps> = ({
       {chatType === "guide" && guideInfo ? (
         <GuideChatArea
           currentChat={currentChat}
-          user={user}
           guide={guideInfo}
-          onSendMessage={handleSendMessage}
+          currentUser={user}
           onMenuClick={handleMenuClick}
           onEndChat={handleEndChat}
           showMenuButton={isMobile}

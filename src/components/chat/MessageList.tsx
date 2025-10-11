@@ -1,18 +1,10 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef } from 'react';
-import {
-  Box,
-  Paper,
-  Typography,
-  Avatar,
-  Stack,
-} from '@mui/material';
-import {
-  Person as PersonIcon,
-  SmartToy as BotIcon,
-} from '@mui/icons-material';
-import { Message, User, GuideProfile } from '@/types';
+import React, { useEffect, useRef } from "react";
+import { Box, Paper, Typography, Avatar, Stack } from "@mui/material";
+import { Person as PersonIcon, SmartToy as BotIcon } from "@mui/icons-material";
+import { Message, User, GuideProfile } from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface MessageListProps {
   messages: Message[];
@@ -27,24 +19,29 @@ interface MessageBubbleProps {
   guide?: GuideProfile;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser, guide }) => {
-  const isUser = message.sender === 'user';
-  const isGuide = message.sender === 'guide';
-  const isAI = message.sender === 'ai';
+const MessageBubble: React.FC<MessageBubbleProps> = ({
+  message,
+  currentUser,
+  guide,
+}) => {
+  const isMyMessage = message.senderId
+    ? message.senderId === Number(currentUser?.id)
+    : message.sender === "user";
+  const isAI = message.sender === "ai";
 
   const formatTime = (timestamp: Date) => {
-    return new Intl.DateTimeFormat('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(timestamp);
   };
 
   return (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: isUser ? 'row-reverse' : 'row',
-        alignItems: 'flex-start',
+        display: "flex",
+        flexDirection: isMyMessage ? "row-reverse" : "row",
+        alignItems: "flex-start",
         gap: 1,
         mb: 2,
       }}
@@ -54,26 +51,38 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser, gui
         sx={{
           width: 32,
           height: 32,
-          bgcolor: isUser ? 'primary.main' : isGuide ? 'success.main' : 'secondary.main',
+          bgcolor: isMyMessage
+            ? "primary.main"
+            : isAI
+            ? "secondary.main"
+            : "success.main",
         }}
-        src={isUser ? currentUser?.avatar : isGuide ? guide?.profileImageUrl : undefined}
+        src={
+          isMyMessage
+            ? currentUser?.avatar
+            : isAI
+            ? undefined
+            : guide?.profileImageUrl
+        }
       >
-        {isUser ? (
-          currentUser?.avatar ? null : <PersonIcon sx={{ fontSize: 18 }} />
-        ) : isGuide ? (
-          guide?.profileImageUrl ? null : (guide?.nickname.charAt(0) || 'G')
-        ) : (
+        {isMyMessage ? (
+          currentUser?.avatar ? null : (
+            <PersonIcon sx={{ fontSize: 18 }} />
+          )
+        ) : isAI ? (
           <BotIcon sx={{ fontSize: 18 }} />
+        ) : guide?.profileImageUrl ? null : (
+          guide?.nickname.charAt(0) || "G"
         )}
       </Avatar>
 
       {/* Message Content */}
       <Box
         sx={{
-          maxWidth: '70%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: isUser ? 'flex-end' : 'flex-start',
+          maxWidth: "70%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: isMyMessage ? "flex-end" : "flex-start",
         }}
       >
         <Paper
@@ -81,19 +90,19 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser, gui
           sx={{
             p: 2,
             borderRadius: 2,
-            backgroundColor: isUser
-              ? 'primary.main'
-              : isGuide
-                ? 'success.100'
-                : 'grey.100',
-            color: isUser
-              ? 'primary.contrastText'
-              : isGuide
-                ? 'success.800'
-                : 'text.primary',
-            maxWidth: '100%',
-            wordBreak: 'break-word',
-            ...(isUser
+            backgroundColor: isMyMessage
+              ? "primary.main"
+              : isAI
+              ? "grey.100"
+              : "success.100",
+            color: isMyMessage
+              ? "primary.contrastText"
+              : isAI
+              ? "text.primary"
+              : "success.800",
+            maxWidth: "100%",
+            wordBreak: "break-word",
+            ...(isMyMessage
               ? {
                   borderBottomRightRadius: 4,
                 }
@@ -106,7 +115,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser, gui
             variant="body1"
             sx={{
               lineHeight: 1.5,
-              whiteSpace: 'pre-wrap',
+              whiteSpace: "pre-wrap",
             }}
           >
             {message.content}
@@ -119,7 +128,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, currentUser, gui
           sx={{
             mt: 0.5,
             mx: 1,
-            fontSize: '0.75rem',
+            fontSize: "0.75rem",
           }}
         >
           {formatTime(message.timestamp)}
@@ -135,10 +144,11 @@ export const MessageList: React.FC<MessageListProps> = ({
   guide,
   typingMessage,
 }) => {
+  const { t } = useTranslation();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -149,30 +159,30 @@ export const MessageList: React.FC<MessageListProps> = ({
     <Box
       sx={{
         flex: 1,
-        overflow: 'auto',
+        overflow: "auto",
         p: 2,
-        display: 'flex',
-        flexDirection: 'column',
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {messages.length === 0 ? (
         <Box
           sx={{
             flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-            color: 'text.secondary',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            color: "text.secondary",
           }}
         >
           <Stack spacing={2} alignItems="center">
             <BotIcon sx={{ fontSize: 64, opacity: 0.3 }} />
             <Typography variant="h6" sx={{ opacity: 0.7 }}>
-              안녕하세요! 👋
+              {t("chat.welcome")}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.7 }}>
-              한국 여행에 대해 궁금한 것이 있으시면 언제든 물어보세요!
+              {t("chat.welcomeMessage")}
             </Typography>
           </Stack>
         </Box>
@@ -191,28 +201,69 @@ export const MessageList: React.FC<MessageListProps> = ({
       {typingMessage && (
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "flex-start",
             gap: 1,
             mb: 2,
-            ml: 5,
           }}
         >
-          <Typography
-            variant="body2"
-            color="text.secondary"
+          {/* Avatar */}
+          <Avatar
             sx={{
-              fontStyle: 'italic',
-              animation: 'pulse 1.5s ease-in-out infinite',
-              '@keyframes pulse': {
-                '0%': { opacity: 0.6 },
-                '50%': { opacity: 1 },
-                '100%': { opacity: 0.6 },
-              },
+              width: 32,
+              height: 32,
+              bgcolor: "secondary.main",
             }}
           >
-            {typingMessage}
-          </Typography>
+            <BotIcon sx={{ fontSize: 18 }} />
+          </Avatar>
+
+          {/* Typing Bubble */}
+          <Paper
+            elevation={1}
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              backgroundColor: "grey.100",
+              borderBottomLeftRadius: 4,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 48,
+              minWidth: 60,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+              }}
+            >
+              {[0, 1, 2].map((index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    backgroundColor: "grey.500",
+                    animation: "wave 1.1s ease-in-out infinite",
+                    animationDelay: `${index * 0.15}s`,
+                    "@keyframes wave": {
+                      "0%, 60%, 100%": {
+                        transform: "translateY(0)",
+                      },
+                      "30%": {
+                        transform: "translateY(-8px)",
+                      },
+                    },
+                  }}
+                />
+              ))}
+            </Box>
+          </Paper>
         </Box>
       )}
 

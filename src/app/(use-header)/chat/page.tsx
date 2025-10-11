@@ -4,7 +4,6 @@ import React from "react";
 import { Box } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { ChatPage } from "@/components/chat/ChatPage";
-import { Header } from "@/components/common/Header";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Chat() {

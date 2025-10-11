@@ -48,10 +48,11 @@ export const useCreateAiChatSession = (
   >
 ) => {
   const queryClient = useQueryClient();
+  const { onSuccess: externalOnSuccess, ...restOptions } = options || {};
 
   return useMutation({
     mutationFn: () => createSession(),
-    onSuccess: (response, ...rest) => {
+    onSuccess: async (response, ...rest) => {
       // Optimistically add the new session to cache
       const newSession = response.data?.data;
       if (newSession) {
@@ -67,11 +68,13 @@ export const useCreateAiChatSession = (
         });
       }
 
-      // Invalidate to ensure data consistency
-      queryClient.invalidateQueries({ queryKey: aiChatKeys.sessions() });
-      options?.onSuccess?.(response, ...rest);
+      // Refetch to ensure data consistency before navigation
+      await queryClient.refetchQueries({ queryKey: aiChatKeys.sessions() });
+
+      // Call external onSuccess if provided
+      await externalOnSuccess?.(response, ...rest);
     },
-    ...options,
+    ...restOptions,
   });
 };
 
@@ -149,17 +152,26 @@ export const useSendAiChatMessage = (
       queryClient.setQueryData(aiChatKeys.messages(sessionId), (old: any) => {
         const currentMessages = old?.data?.data || [];
         const newUserMessage = {
-          messageId: `temp-${Date.now()}`,
+          messageId: `temp-user-${Date.now()}`,
           senderType: "USER",
           content: variables.message,
           timestamp: new Date().toISOString(),
+        };
+
+        // Add user message and AI typing indicator
+        const aiTypingMessage = {
+          messageId: `temp-ai-typing-${Date.now()}`,
+          senderType: "AI",
+          content: "",
+          timestamp: new Date().toISOString(),
+          isTyping: true,
         };
 
         return {
           ...old,
           data: {
             ...old?.data,
-            data: [...currentMessages, newUserMessage],
+            data: [...currentMessages, newUserMessage, aiTypingMessage],
           },
         };
       });
@@ -175,12 +187,6 @@ export const useSendAiChatMessage = (
           context.previousMessages
         );
       }
-    },
-    onSuccess: (response, variables) => {
-      // Invalidate and refetch to get the actual server data (including AI response)
-      queryClient.invalidateQueries({
-        queryKey: aiChatKeys.messages(sessionId),
-      });
     },
     onSettled: () => {
       // Always refetch after error or success to ensure we have the latest data

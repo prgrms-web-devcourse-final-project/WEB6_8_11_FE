@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -12,14 +12,8 @@ import {
   Toolbar,
   AppBar,
   Badge,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  MoreVert as MoreVertIcon,
-  CallEnd as CallEndIcon,
-  Circle as CircleIcon,
-  Info as InfoIcon,
-} from '@mui/icons-material';
+} from "@mui/material";
+import { Menu as MenuIcon } from "@mui/icons-material";
 import {
   Chat,
   User,
@@ -33,28 +27,36 @@ import { MessageInput } from "./MessageInput";
 import { useStompSocket } from "@/hooks/useStompSocket";
 import { useGetChatMessages } from "@/hooks/api/useUserChat";
 import { ChatEndDialog } from "@/components/rating/ChatEndDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface GuideChatAreaProps {
   currentChat: Chat | null;
-  user: User;
   guide: GuideProfile;
-  onSendMessage: (content: string) => void;
+  currentUser: User; // 현재 로그인한 사용자
   onMenuClick: () => void;
-  onEndChat: (rating: Omit<ChatRating, 'id' | 'createdAt'>) => Promise<void>;
+  onEndChat: (rating: Omit<ChatRating, "id" | "createdAt">) => Promise<void>;
   showMenuButton?: boolean;
   websocketUrl?: string;
 }
 
 export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
   currentChat,
-  user,
   guide,
-  onSendMessage,
+  currentUser,
   onMenuClick,
   onEndChat,
   showMenuButton = false,
   websocketUrl = "http://localhost:8080/ws/userchat",
 }) => {
+  const { user: me } = useAuth();
+  const { translateLocation } = useTranslation();
+
+  // 채팅 상대방 결정: 내가 가이드면 currentUser(유저), 내가 유저면 guide
+  const isGuide = me?.userType === "guide";
+  const chatPartner = isGuide
+    ? { nickname: currentUser.nickname || currentUser.name, avatar: currentUser.avatar }
+    : { nickname: guide.nickname, avatar: guide.profileImageUrl };
   const [endDialogOpen, setEndDialogOpen] = useState(false);
   const [realtimeMessages, setRealtimeMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -80,15 +82,20 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
     url: websocketUrl,
     roomId: roomId,
     onMessage: (message) => {
+      // message.data contains the actual message object
+      const messageData = message.data;
+      if (!messageData) return;
+
+      const myRole = me?.userType === "guide" ? "guide" : "user";
+      const otherRole = me?.userType === "guide" ? "user" : "guide";
+
       // Handle incoming real-time message
       const newMessage: Message = {
-        id: message.id?.toString() || Date.now().toString(),
-        content: message.content || "",
-        sender:
-          message.senderType === "GUIDE"
-            ? ("guide" as const)
-            : ("user" as const),
-        timestamp: new Date(message.sentAt || Date.now()),
+        id: messageData.id?.toString() || Date.now().toString(),
+        content: messageData.content || "",
+        senderId: messageData.senderId,
+        sender: messageData.senderId === Number(me?.id) ? myRole : otherRole,
+        timestamp: new Date(messageData.createdAt || Date.now()),
       };
 
       setRealtimeMessages((prev) => [...prev, newMessage]);
@@ -152,10 +159,10 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
       <Box
         sx={{
           flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: 'grey.50',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "grey.50",
         }}
       >
         <Typography variant="body1" color="text.secondary">
@@ -166,7 +173,9 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box
+      sx={{ display: "flex", flexDirection: "column", height: "100%", flex: 1 }}
+    >
       {/* Chat Header */}
       <AppBar position="static" color="default" elevation={1}>
         <Toolbar>
@@ -182,63 +191,52 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
             </IconButton>
           )}
 
-          {/* Guide Info */}
-          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+          {/* Chat Partner Info */}
+          <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
             <Badge
               overlap="circular"
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             >
-              <Avatar src={guide.profileImageUrl} sx={{ width: 40, height: 40, mr: 2 }}>
-                {guide.nickname.charAt(0)}
+              <Avatar
+                src={chatPartner.avatar}
+                sx={{ width: 40, height: 40, mr: 2 }}
+              >
+                {chatPartner.nickname?.charAt(0)}
               </Avatar>
             </Badge>
 
             <Box sx={{ flex: 1 }}>
               <Typography variant="subtitle1" fontWeight={600}>
-                {guide.nickname}
+                {chatPartner.nickname}
               </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <CircleIcon
-                  sx={{
-                    color: isConnected ? "success.main" : "error.main",
-                    fontSize: 12,
-                  }}
-                />
-                <Typography variant="caption" color="text.secondary">
-                  {isConnected ? "연결됨" : "연결 중..."}
-                </Typography>
-              </Box>
             </Box>
 
-            {/* Location */}
-            {guide.location && (
-              <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
+            {/* Location - only show when viewing guide's profile */}
+            {!isGuide && guide.location && (
+              <Box sx={{ display: "flex", gap: 1, mr: 2 }}>
                 <Chip
-                  label={guide.location}
+                  label={translateLocation(guide.location)}
                   size="small"
                   color="primary"
                   variant="outlined"
-                  sx={{ height: 24, fontSize: '0.75rem' }}
+                  sx={{ height: 24, fontSize: "0.75rem" }}
                 />
               </Box>
             )}
           </Box>
 
           {/* Action Buttons */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton color="inherit">
-              <InfoIcon />
-            </IconButton>
-            <IconButton
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Button
+              variant="contained"
               color="error"
               onClick={handleEndChat}
+              size="small"
               disabled={!currentChat.isActive}
+              sx={{ height: 36, fontSize: "0.75rem", px: "0.75rem" }}
             >
-              <CallEndIcon />
-            </IconButton>
-            <IconButton color="inherit">
-              <MoreVertIcon />
-            </IconButton>
+              채팅 종료
+            </Button>
           </Box>
         </Toolbar>
       </AppBar>
@@ -261,7 +259,7 @@ export const GuideChatArea: React.FC<GuideChatAreaProps> = ({
       >
         <MessageList
           messages={allMessages}
-          currentUser={user}
+          currentUser={currentUser}
           guide={currentChat.chatType === "guide" ? guide : undefined}
         />
         <div ref={messagesEndRef} />

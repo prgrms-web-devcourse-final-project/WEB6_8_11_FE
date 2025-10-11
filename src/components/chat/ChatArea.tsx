@@ -23,6 +23,7 @@ interface ChatAreaProps {
   onSendMessage: (message: string) => void;
   onMenuClick?: () => void;
   showMenuButton?: boolean;
+  isAiTyping?: boolean;
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
@@ -31,6 +32,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   onSendMessage,
   onMenuClick,
   showMenuButton = false,
+  isAiTyping = false,
 }) => {
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("ko-KR", {
@@ -138,6 +140,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         <MessageList
           messages={currentChat?.messages || []}
           currentUser={currentUser}
+          typingMessage={isAiTyping ? "AI가 응답을 작성하고 있습니다..." : undefined}
         />
 
         {/* Message Input */}
