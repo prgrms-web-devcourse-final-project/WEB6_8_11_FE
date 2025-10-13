@@ -163,7 +163,7 @@ export const GuideProfilePage: React.FC<GuideProfilePageProps> = ({
                     }
                   >
                     <Avatar
-                      src={guide.profileImage}
+                      src={guide.profileImageUrl}
                       sx={{
                         width: 120,
                         height: 120,
@@ -174,7 +174,7 @@ export const GuideProfilePage: React.FC<GuideProfilePageProps> = ({
                         boxShadow: 3,
                       }}
                     >
-                      {!guide.profileImage && guide.nickname.charAt(0)}
+                      {!guide.profileImageUrl && guide.nickname.charAt(0)}
                     </Avatar>
                   </Badge>
 
@@ -203,13 +203,13 @@ export const GuideProfilePage: React.FC<GuideProfilePageProps> = ({
                   {/* Rating */}
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
                     <Rating
-                      value={averageRating || guide.averageRating}
+                      value={averageRating || guide.averageRating || 0}
                       precision={0.1}
                       readOnly
                       sx={{ mr: 1 }}
                     />
                     <Typography variant="h6" fontWeight={600}>
-                      {(averageRating || guide.averageRating).toFixed(1)}
+                      {(averageRating || guide.averageRating || 0).toFixed(1)}
                     </Typography>
                   </Box>
                   <Typography variant="body2" color="text.secondary">
@@ -231,48 +231,54 @@ export const GuideProfilePage: React.FC<GuideProfilePageProps> = ({
                 {/* Details */}
                 <Stack spacing={2}>
                   {/* Specialties */}
-                  <Box>
-                    <Typography variant="subtitle2" gutterBottom>
-                      전문분야
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {guide.specialties.map((specialty, index) => (
-                        <Chip
-                          key={index}
-                          label={specialty}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                      ))}
+                  {guide.specialties && guide.specialties.length > 0 && (
+                    <Box>
+                      <Typography variant="subtitle2" gutterBottom>
+                        전문분야
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {guide.specialties.map((specialty, index) => (
+                          <Chip
+                            key={index}
+                            label={specialty}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        ))}
+                      </Box>
                     </Box>
-                  </Box>
+                  )}
 
                   {/* Languages */}
-                  <Box>
-                    <Typography variant="subtitle2" gutterBottom>
-                      지원언어
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <LanguageIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                      <Typography variant="body2" color="text.secondary">
-                        {guide.languages.join(', ')}
+                  {guide.languages && guide.languages.length > 0 && (
+                    <Box>
+                      <Typography variant="subtitle2" gutterBottom>
+                        지원언어
                       </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <LanguageIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {guide.languages.join(', ')}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
+                  )}
 
                   {/* Join Date */}
-                  <Box>
-                    <Typography variant="subtitle2" gutterBottom>
-                      가입일
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CalendarIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                      <Typography variant="body2" color="text.secondary">
-                        {formatJoinDate(guide.joinDate)}
+                  {guide.joinDate && (
+                    <Box>
+                      <Typography variant="subtitle2" gutterBottom>
+                        가입일
                       </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <CalendarIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {formatJoinDate(guide.joinDate)}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
+                  )}
                 </Stack>
 
                 <Divider sx={{ my: 3 }} />
@@ -306,16 +312,16 @@ export const GuideProfilePage: React.FC<GuideProfilePageProps> = ({
                   <Grid item xs={12} sm={4}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Typography variant="h3" fontWeight={600} color="primary.main">
-                        {(averageRating || guide.averageRating).toFixed(1)}
+                        {(averageRating || guide.averageRating || 0).toFixed(1)}
                       </Typography>
                       <Rating
-                        value={averageRating || guide.averageRating}
+                        value={averageRating || guide.averageRating || 0}
                         precision={0.1}
                         readOnly
                         sx={{ mb: 1 }}
                       />
                       <Typography variant="body2" color="text.secondary">
-                        {totalReviews || guide.totalReviews}개 리뷰
+                        {totalReviews || guide.totalReviews || 0}개 리뷰
                       </Typography>
                     </Box>
                   </Grid>

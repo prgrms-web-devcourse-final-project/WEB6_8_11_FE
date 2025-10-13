@@ -252,8 +252,8 @@ export default function GuidesPage() {
       <Box sx={{ mb: 3 }}>
         <Typography variant="h6" color="text.secondary">
           {selectedLocations.size === 0
-            ? t("guide.totalGuides", { count: guides.length })
-            : t("guide.selectedGuides", { count: filteredGuides.length })}
+            ? t("guide.totalGuides", { count: String(guides.length) })
+            : t("guide.selectedGuides", { count: String(filteredGuides.length) })}
         </Typography>
       </Box>
 

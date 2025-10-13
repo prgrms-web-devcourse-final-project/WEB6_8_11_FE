@@ -955,7 +955,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     setEditForm({ ...editForm, description: e.target.value })
                   }
                   variant="outlined"
-                  helperText={t("profile.charactersCount", { count: editForm.description.length })}
+                  helperText={t("profile.charactersCount", { count: String(editForm.description.length) })}
                   inputProps={{ maxLength: 500 }}
                   placeholder={t("profile.descriptionPlaceholder")}
                 />

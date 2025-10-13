@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { defineConfig } from "@7nohe/openapi-react-query-codegen";
 
 export default defineConfig({

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Box, Container, Alert } from "@mui/material";
+import { Box, Container, Alert, CircularProgress } from "@mui/material";
 import { RoleSelection } from "@/components/auth/RoleSelection";
 import { VideoBackground } from "@/components/common/VideoBackground";
 import { useSelectRole, type UserRole } from "@/hooks/api/useAuth";
@@ -12,7 +12,7 @@ import {
   setAccessToken,
 } from "@/lib/api/request";
 
-export default function SignupRole() {
+function SignupRoleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -77,6 +77,35 @@ export default function SignupRole() {
   };
 
   return (
+    <>
+      {error && (
+        <Alert
+          severity="error"
+          sx={{
+            mb: 3,
+            backdropFilter: "blur(10px)",
+            backgroundColor: "rgba(211, 47, 47, 0.15)",
+            border: "1px solid rgba(211, 47, 47, 0.3)",
+            color: "white",
+            "& .MuiAlert-icon": {
+              color: "rgba(255, 255, 255, 0.9)",
+            },
+          }}
+        >
+          {error}
+        </Alert>
+      )}
+
+      <RoleSelection
+        onSelectRole={handleRoleSelect}
+        loading={selectRoleMutation.isPending}
+      />
+    </>
+  );
+}
+
+export default function SignupRole() {
+  return (
     <Box
       sx={{
         minHeight: "100vh",
@@ -90,28 +119,15 @@ export default function SignupRole() {
       <VideoBackground videoSrc="/background.mp4" overlayOpacity={0.6} />
 
       <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1, py: 8 }}>
-        {error && (
-          <Alert
-            severity="error"
-            sx={{
-              mb: 3,
-              backdropFilter: "blur(10px)",
-              backgroundColor: "rgba(211, 47, 47, 0.15)",
-              border: "1px solid rgba(211, 47, 47, 0.3)",
-              color: "white",
-              "& .MuiAlert-icon": {
-                color: "rgba(255, 255, 255, 0.9)",
-              },
-            }}
-          >
-            {error}
-          </Alert>
-        )}
-
-        <RoleSelection
-          onSelectRole={handleRoleSelect}
-          loading={selectRoleMutation.isPending}
-        />
+        <Suspense
+          fallback={
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <CircularProgress />
+            </Box>
+          }
+        >
+          <SignupRoleContent />
+        </Suspense>
       </Container>
     </Box>
   );
