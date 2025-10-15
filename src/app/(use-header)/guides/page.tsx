@@ -26,49 +26,7 @@ import { LanguageSelector } from "@/components/common/LanguageSelector";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { GuideResponse } from "@/lib/generated";
 
-// 지역 타입 (GuideResponse의 location과 동일)
-type LocationType = NonNullable<GuideResponse["location"]>;
-
-// 지역 enum과 한글 매핑
-const LOCATION_LABELS: Record<string, string> = {
-  SEOUL: "서울",
-  BUSAN: "부산",
-  DAEGU: "대구",
-  INCHEON: "인천",
-  GWANGJU: "광주",
-  DAEJEON: "대전",
-  ULSAN: "울산",
-  SEJONG: "세종",
-  GYEONGGI: "경기",
-  GANGWON: "강원",
-  CHUNGCHEONGBUK: "충북",
-  CHUNGCHEONGNAM: "충남",
-  JEOLLABUK: "전북",
-  JEOLLANAM: "전남",
-  GYEONGSANGBUK: "경북",
-  GYEONGSANGNAM: "경남",
-  JEJU: "제주",
-};
-
-const LOCATIONS: LocationType[] = [
-  "SEOUL",
-  "BUSAN",
-  "DAEGU",
-  "INCHEON",
-  "GWANGJU",
-  "DAEJEON",
-  "ULSAN",
-  "SEJONG",
-  "GYEONGGI",
-  "GANGWON",
-  "CHUNGCHEONGBUK",
-  "CHUNGCHEONGNAM",
-  "JEOLLABUK",
-  "JEOLLANAM",
-  "GYEONGSANGBUK",
-  "GYEONGSANGNAM",
-  "JEJU",
-];
+import { LocationName, LOCATION_HIERARCHY, convertLegacyLocationToName } from "@/types";
 
 export default function GuidesPage() {
   const router = useRouter();
@@ -214,34 +172,54 @@ export default function GuidesPage() {
               </Typography>
             </Box>
 
-            {/* 칩 형태의 필터 */}
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 1,
-              }}
-            >
+            {/* 칩 형태의 필터 - 계층 구조 */}
+            <Box>
               {/* 전체 칩 */}
-              <Chip
-                label={t("guide.all")}
-                onClick={handleAllToggle}
-                color={selectedLocations.size === 0 ? "primary" : "default"}
-                variant={selectedLocations.size === 0 ? "filled" : "outlined"}
-                sx={{
-                  fontWeight: selectedLocations.size === 0 ? 600 : 400,
-                }}
-              />
-
-              {/* 지역별 칩 */}
-              {LOCATIONS.map((location) => (
+              <Box sx={{ mb: 2 }}>
                 <Chip
-                  key={location}
-                  label={translateLocation(location)}
-                  onClick={() => handleLocationToggle(location)}
-                  color={selectedLocations.has(location) ? "primary" : "default"}
-                  variant={selectedLocations.has(location) ? "filled" : "outlined"}
+                  label={t("guide.all")}
+                  onClick={handleAllToggle}
+                  color={selectedLocations.size === 0 ? "primary" : "default"}
+                  variant={selectedLocations.size === 0 ? "filled" : "outlined"}
+                  sx={{
+                    fontWeight: selectedLocations.size === 0 ? 600 : 400,
+                  }}
                 />
+              </Box>
+
+              {/* 시/도별 그룹화된 칩들 */}
+              {LOCATION_HIERARCHY.map((region) => (
+                <Box key={region.province} sx={{ mb: 2 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      display: "block",
+                      mb: 1,
+                      fontWeight: 600,
+                      color: "text.secondary",
+                    }}
+                  >
+                    {region.province}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 1,
+                    }}
+                  >
+                    {region.cities.map((city) => (
+                      <Chip
+                        key={city}
+                        label={city}
+                        onClick={() => handleLocationToggle(city)}
+                        color={selectedLocations.has(city) ? "primary" : "default"}
+                        variant={selectedLocations.has(city) ? "filled" : "outlined"}
+                        size="small"
+                      />
+                    ))}
+                  </Box>
+                </Box>
               ))}
             </Box>
           </Box>
@@ -269,7 +247,7 @@ export default function GuidesPage() {
                   nickname: guide.nickname,
                   profileImageUrl: guide.profileImageUrl,
                   role: guide.role,
-                  location: guide.location,
+                  location: convertLegacyLocationToName(guide.location),
                   description: guide.description,
                 }}
                 onSelect={() => handleGuideSelect(guide)}

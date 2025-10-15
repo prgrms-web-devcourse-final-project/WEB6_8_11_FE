@@ -21,9 +21,12 @@ import {
   Person as PersonIcon,
   SmartToy as AIIcon,
   AccountCircle as GuideIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Chat, User } from "@/types";
+import { aiChatKeys } from "@/hooks/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface SidebarProps {
   open: boolean;
@@ -33,6 +36,7 @@ interface SidebarProps {
   user: User | null;
   onNewChat: () => void;
   onSelectChat: (chatId: string) => void;
+  onDeleteChat: (chatId: string) => void;
   onProfileClick: () => void;
   variant?: "permanent" | "temporary";
   width?: number;
@@ -46,11 +50,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   user,
   onNewChat,
   onSelectChat,
+  onDeleteChat,
   onProfileClick,
   variant = "permanent",
   width = 280,
 }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   const truncateText = (text: string, maxLength: number = 30) => {
     return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
@@ -111,7 +117,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const chatTypeColor = isAIChat ? "info.main" : "success.main";
 
             return (
-              <ListItem key={chat.id} disablePadding sx={{ mb: 0.5 }}>
+              <ListItem
+                key={chat.id}
+                disablePadding
+                sx={{ mb: 0.5 }}
+                secondaryAction={
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await onDeleteChat(chat.id);
+                      await queryClient.invalidateQueries({
+                        queryKey: aiChatKeys.sessions(),
+                      });
+                    }}
+                    sx={{
+                      color: isSelected
+                        ? "primary.contrastText"
+                        : "text.secondary",
+                      opacity: 0.7,
+                      "&:hover": {
+                        opacity: 1,
+                        color: "error.main",
+                      },
+                    }}
+                  >
+                    <DeleteIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                }
+              >
                 <ListItemButton
                   selected={isSelected}
                   onClick={() => onSelectChat(chat.id)}
@@ -121,6 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     alignItems: "flex-start",
                     py: 1.5,
                     px: 2,
+                    pr: 6,
                     "&.Mui-selected": {
                       bgcolor: "primary.main",
                       color: "primary.contrastText",

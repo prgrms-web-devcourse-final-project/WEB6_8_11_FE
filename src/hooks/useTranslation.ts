@@ -23,6 +23,7 @@ const translations: Record<Language, Translations> = {
     "auth.role.user.description": "가이드를 찾고 여행 정보를 얻습니다",
     "auth.role.guide.title": "가이드",
     "auth.role.guide.description": "여행자에게 가이드 서비스를 제공합니다",
+    "auth.processing": "로그인 처리 중...",
     "chat.newChat": "새 채팅 시작",
     "chat.chatHistory": "채팅 기록",
     "chat.sendMessage": "메시지 보내기",
@@ -168,6 +169,7 @@ const translations: Record<Language, Translations> = {
     "auth.role.user.description": "Find guides and get travel information",
     "auth.role.guide.title": "Guide",
     "auth.role.guide.description": "Provide guide services to travelers",
+    "auth.processing": "Processing login...",
     "chat.newChat": "Start New Chat",
     "chat.chatHistory": "Chat History",
     "chat.sendMessage": "Send Message",
@@ -314,6 +316,7 @@ const translations: Record<Language, Translations> = {
     "auth.role.user.description": "寻找导游并获取旅行信息",
     "auth.role.guide.title": "导游",
     "auth.role.guide.description": "为旅行者提供导游服务",
+    "auth.processing": "正在处理登录...",
     "chat.newChat": "开始新对话",
     "chat.chatHistory": "聊天记录",
     "chat.sendMessage": "发送消息",
@@ -456,6 +459,7 @@ const translations: Record<Language, Translations> = {
     "auth.role.user.description": "ガイドを探して旅行情報を入手",
     "auth.role.guide.title": "ガイド",
     "auth.role.guide.description": "旅行者にガイドサービスを提供",
+    "auth.processing": "ログイン処理中...",
     "chat.newChat": "新しいチャットを開始",
     "chat.chatHistory": "チャット履歴",
     "chat.sendMessage": "メッセージを送信",
@@ -601,6 +605,7 @@ const translations: Record<Language, Translations> = {
     "auth.role.guide.title": "Guía",
     "auth.role.guide.description":
       "Proporciona servicios de guía a los viajeros",
+    "auth.processing": "Procesando inicio de sesión...",
     "chat.newChat": "Iniciar Nuevo Chat",
     "chat.chatHistory": "Historial de Chat",
     "chat.sendMessage": "Enviar Mensaje",
@@ -784,8 +789,9 @@ export const useTranslation = () => {
     return value;
   };
 
-  const translateLocation = (locationCode: string): string => {
-    return t(`location.${locationCode}`);
+  const translateLocation = (locationName: string): string => {
+    // Location names are already in Korean, return as-is
+    return locationName;
   };
 
   return { t, language, translateLocation };

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, CircularProgress } from '@mui/material';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,8 +13,15 @@ interface AuthGuardProps {
 export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const router = useRouter();
   const { isAuthenticated, loading, isNewUser } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     // Check if user has registerToken (new user who hasn't selected role)
     const registerToken = getRegisterToken();
     if (registerToken) {
@@ -32,9 +39,10 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     if (!loading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, loading, isNewUser, router]);
+  }, [mounted, isAuthenticated, loading, isNewUser, router]);
 
-  if (loading) {
+  // Show loading state until mounted to match server and client renders
+  if (!mounted || loading) {
     return (
       <Box
         sx={{

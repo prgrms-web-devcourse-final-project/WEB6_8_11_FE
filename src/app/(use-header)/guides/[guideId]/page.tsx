@@ -26,6 +26,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useGetGuideById } from "@/hooks/api";
 import { useStartChat } from "@/hooks/api/useUserChat";
 import { useTranslation } from "@/hooks/useTranslation";
+import { convertLegacyLocationToName } from "@/types";
 
 export default function GuideDetailPage() {
   const router = useRouter();
@@ -174,7 +175,7 @@ export default function GuideDetailPage() {
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: { xs: "center", sm: "flex-start" } }}>
                     <LocationIcon sx={{ fontSize: 18, mr: 0.5, color: "primary.main" }} />
                     <Chip
-                      label={translateLocation(guide.location)}
+                      label={translateLocation(convertLegacyLocationToName(guide.location) || guide.location)}
                       size="medium"
                       color="primary"
                       variant="outlined"

@@ -6,7 +6,7 @@ import { Box, useTheme, useMediaQuery } from "@mui/material";
 import { Sidebar } from "./Sidebar";
 import { ChatArea } from "./ChatArea";
 import { GuideChatArea } from "./GuideChatArea";
-import { Chat, User, Message, GuideProfile, ChatRating } from "@/types";
+import { Chat, User, Message, GuideProfile, ChatRating, convertLegacyLocationToName } from "@/types";
 import {
   useGetAiChatSessions,
   useCreateAiChatSession,
@@ -16,7 +16,7 @@ import {
   useGetChatRooms,
   useGetGuideById,
 } from "@/hooks/api";
-import { useRateGuideWithId } from "@/hooks/api/useUserChat";
+import { useRateGuideWithId, useDeleteChatRoom } from "@/hooks/api/useUserChat";
 import type {
   SessionsResponse,
   SessionMessagesResponse,
@@ -57,7 +57,10 @@ const convertSessionToChat = (
 /**
  * Convert API ChatRoomResponse to local Chat type (Guide Chat)
  */
-const convertRoomToChat = (room: ChatRoomResponse, guideChatLabel: string = "Guide Chat"): Chat => {
+const convertRoomToChat = (
+  room: ChatRoomResponse,
+  guideChatLabel: string = "Guide Chat"
+): Chat => {
   return {
     id: `guide-${room.id}` || "",
     title: room.title || guideChatLabel,
@@ -143,6 +146,22 @@ export const ChatPage: React.FC<ChatPageProps> = ({
     },
   });
 
+  const deleteRoom = useDeleteChatRoom({
+    onSuccess: () => {
+      // Navigate to first available chat or create new one
+      const allChats = [...aiChats, ...guideChats];
+      if (allChats.length > 1) {
+        const remaining = allChats.filter((c) => c.id !== currentChatId);
+        const firstChat = remaining[0];
+        if (firstChat?.id) {
+          router.push(`/chat`);
+        }
+      } else {
+        router.push("/chat");
+      }
+    },
+  });
+
   const rateGuideMutation = useRateGuideWithId({
     onSuccess: () => {
       // Navigate to chat list after rating
@@ -156,7 +175,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   // Convert sessions to Chat format
   const aiChats = useMemo(() => {
     if (!sessions) return [];
-    return sessions.map((session) => convertSessionToChat(session, [], t("chat.aiChat")));
+    return sessions.map((session) =>
+      convertSessionToChat(session, [], t("chat.aiChat"))
+    );
   }, [sessions, t]);
 
   // Convert rooms to Chat format
@@ -182,7 +203,11 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         (s) => `ai-${s.sessionId}` === currentChatId
       );
       if (!session) return null;
-      return convertSessionToChat(session, messagesData || [], t("chat.aiChat"));
+      return convertSessionToChat(
+        session,
+        messagesData || [],
+        t("chat.aiChat")
+      );
     } else if (chatType === "guide") {
       const room = rooms?.find((r) => `guide-${r.id}` === currentChatId);
       if (!room) return null;
@@ -225,7 +250,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!numericChatId) {
+    if (!currentChatId || !numericChatId) {
       console.error("No chat selected");
       return;
     }
@@ -266,6 +291,28 @@ export const ChatPage: React.FC<ChatPageProps> = ({
     setSidebarOpen(false);
   };
 
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      const chatType = chatId?.startsWith("ai-")
+        ? "ai"
+        : chatId?.startsWith("guide-")
+        ? "guide"
+        : null;
+
+      if (!chatType) return;
+
+      const numericId = parseInt(chatId.replace(/^(ai|guide)-/, ""), 10);
+
+      if (chatType === "ai") {
+        await deleteSession.mutateAsync(numericId);
+      } else if (chatType === "guide") {
+        await deleteRoom.mutateAsync(numericId);
+      }
+    } catch (error) {
+      console.error("Failed to delete chat:", error);
+    }
+  };
+
   useEffect(() => {
     if (!isMobile) {
       setSidebarOpen(true);
@@ -294,7 +341,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
       nickname: guide.nickname,
       profileImageUrl: guide.profileImageUrl,
       role: guide.role,
-      location: guide.location,
+      location: convertLegacyLocationToName(guide.location),
       description: guide.description,
       name: guide.nickname,
       userType: "guide",
@@ -311,6 +358,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         user={user}
         onNewChat={handleNewChat}
         onSelectChat={handleSelectChat}
+        onDeleteChat={handleDeleteChat}
         onProfileClick={onProfileClick}
         variant={isMobile ? "temporary" : "permanent"}
       />
@@ -331,6 +379,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
           onSendMessage={handleSendMessage}
           onMenuClick={handleMenuClick}
           showMenuButton={isMobile}
+          isAiTyping={sendMessage.isPending}
         />
       )}
     </Box>

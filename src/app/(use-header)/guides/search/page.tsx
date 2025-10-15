@@ -29,7 +29,7 @@ import {
   Clear as ClearIcon,
   Search as SearchIcon,
 } from "@mui/icons-material";
-import { GuideProfile, LocationCode, LOCATION_LABELS } from "@/types";
+import { GuideProfile, LocationName, LOCATION_HIERARCHY, convertLegacyLocationToName } from "@/types";
 import { GuideCard } from "@/components/guide/GuideCard";
 import { Header } from "@/components/common/Header";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,7 +53,7 @@ const convertGuideResponseToProfile = (guide: GuideResponse): GuideProfile => {
     nickname: guide.nickname || guide.email,
     profileImageUrl: guide.profileImageUrl,
     role: guide.role,
-    location: guide.location,
+    location: convertLegacyLocationToName(guide.location),
     description: guide.description,
     // Legacy fields for compatibility
     name: guide.nickname || guide.email,
@@ -104,8 +104,8 @@ function GuideSearchResults() {
   // Get unique locations from guides
   const availableLocations = useMemo(() => {
     const locations = guides
-      .map((g) => g.location)
-      .filter((loc): loc is LocationCode => !!loc);
+      .map((g) => convertLegacyLocationToName(g.location))
+      .filter((loc): loc is LocationName => !!loc);
     return Array.from(new Set(locations)).sort();
   }, [guides]);
 
@@ -258,30 +258,54 @@ function GuideSearchResults() {
         </Select>
       </FormControl>
 
-      {/* 활동 지역 */}
-      {availableLocations.length > 0 && (
-        <Box>
-          <Typography variant="subtitle2" gutterBottom>
-            활동 지역
-          </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {availableLocations.map((location) => (
-              <Chip
-                key={location}
-                label={translateLocation(location)}
-                onClick={() => handleLocationToggle(location)}
-                color={
-                  filters.locations.includes(location) ? "primary" : "default"
-                }
-                variant={
-                  filters.locations.includes(location) ? "filled" : "outlined"
-                }
-                size="small"
-              />
-            ))}
-          </Box>
-        </Box>
-      )}
+      {/* 활동 지역 - 계층 구조 */}
+      <Box>
+        <Typography variant="subtitle2" gutterBottom sx={{ mb: 2 }}>
+          활동 지역
+        </Typography>
+        {LOCATION_HIERARCHY.map((region) => {
+          // Filter cities that have guides
+          const availableCities = region.cities.filter((city) =>
+            availableLocations.includes(city)
+          );
+
+          // Only show regions that have available cities
+          if (availableCities.length === 0) return null;
+
+          return (
+            <Box key={region.province} sx={{ mb: 2 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  mb: 1,
+                  fontWeight: 600,
+                  color: "text.secondary",
+                  fontSize: "0.75rem",
+                }}
+              >
+                {region.province}
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                {availableCities.map((city) => (
+                  <Chip
+                    key={city}
+                    label={city}
+                    onClick={() => handleLocationToggle(city)}
+                    color={
+                      filters.locations.includes(city) ? "primary" : "default"
+                    }
+                    variant={
+                      filters.locations.includes(city) ? "filled" : "outlined"
+                    }
+                    size="small"
+                  />
+                ))}
+              </Box>
+            </Box>
+          );
+        })}
+      </Box>
     </Box>
   );
 

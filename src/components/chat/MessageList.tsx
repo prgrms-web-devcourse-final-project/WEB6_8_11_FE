@@ -5,6 +5,14 @@ import { Box, Paper, Typography, Avatar, Stack } from "@mui/material";
 import { Person as PersonIcon, SmartToy as BotIcon } from "@mui/icons-material";
 import { Message, User, GuideProfile } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import {
+  oneDark,
+  oneLight,
+} from "react-syntax-highlighter/dist/cjs/styles/prism";
 
 interface MessageListProps {
   messages: Message[];
@@ -18,6 +26,21 @@ interface MessageBubbleProps {
   currentUser: User | null;
   guide?: GuideProfile;
 }
+
+// Extract first image URL from message content
+const extractFirstImageUrl = (content: string): string | null => {
+  // Priority 1: Markdown image syntax ![alt](url)
+  const markdownImageMatch = content.match(/!\[.*?\]\((https?:\/\/[^\)]+)\)/);
+  if (markdownImageMatch) return markdownImageMatch[1];
+
+  // Priority 2: Plain image URL
+  const urlMatch = content.match(
+    /https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?[^\s]*)?/i
+  );
+  if (urlMatch) return urlMatch[0];
+
+  return null;
+};
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
@@ -35,6 +58,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       minute: "2-digit",
     }).format(timestamp);
   };
+
+  // Extract first image URL from content
+  const imageUrl = extractFirstImageUrl(message.content);
 
   return (
     <Box
@@ -109,17 +135,155 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               : {
                   borderBottomLeftRadius: 4,
                 }),
+            "& p": {
+              margin: "0.5em 0",
+              "&:first-of-type": { marginTop: 0 },
+              "&:last-of-type": { marginBottom: 0 },
+            },
+            "& h1, & h2, & h3, & h4, & h5, & h6": {
+              margin: "0.75em 0 0.5em",
+              fontWeight: 600,
+              "&:first-of-type": { marginTop: 0 },
+            },
+            "& ul, & ol": {
+              margin: "0.5em 0",
+              paddingLeft: "1.5em",
+            },
+            "& li": {
+              margin: "0.25em 0",
+            },
+            "& code": {
+              backgroundColor: isMyMessage
+                ? "rgba(255, 255, 255, 0.15)"
+                : "rgba(0, 0, 0, 0.08)",
+              padding: "0.15em 0.4em",
+              borderRadius: "3px",
+              fontSize: "0.9em",
+              fontFamily: "monospace",
+            },
+            "& pre": {
+              margin: "0.5em 0",
+              borderRadius: "6px",
+              overflow: "auto",
+              "& code": {
+                backgroundColor: "transparent",
+                padding: 0,
+              },
+            },
+            "& a": {
+              color: isMyMessage ? "inherit" : "primary.main",
+              textDecoration: "underline",
+              fontWeight: 500,
+              "&:hover": {
+                opacity: 0.8,
+              },
+            },
+            "& blockquote": {
+              borderLeft: isMyMessage
+                ? "3px solid rgba(255, 255, 255, 0.3)"
+                : "3px solid rgba(0, 0, 0, 0.2)",
+              margin: "0.5em 0",
+              paddingLeft: "1em",
+              opacity: 0.9,
+            },
+            "& table": {
+              borderCollapse: "collapse",
+              width: "100%",
+              margin: "0.5em 0",
+            },
+            "& th, & td": {
+              border: isMyMessage
+                ? "1px solid rgba(255, 255, 255, 0.3)"
+                : "1px solid rgba(0, 0, 0, 0.2)",
+              padding: "0.5em",
+              textAlign: "left",
+            },
+            "& th": {
+              fontWeight: 600,
+              backgroundColor: isMyMessage
+                ? "rgba(255, 255, 255, 0.1)"
+                : "rgba(0, 0, 0, 0.05)",
+            },
+            "& hr": {
+              border: "none",
+              borderTop: isMyMessage
+                ? "1px solid rgba(255, 255, 255, 0.3)"
+                : "1px solid rgba(0, 0, 0, 0.2)",
+              margin: "1em 0",
+            },
+            "& img": {
+              maxWidth: "100%",
+              height: "auto",
+              borderRadius: "4px",
+              margin: "0.5em 0",
+            },
           }}
         >
-          <Typography
-            variant="body1"
-            sx={{
-              lineHeight: 1.5,
-              whiteSpace: "pre-wrap",
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              code({ node, inline, className, children, ...props }: any) {
+                const match = /language-(\w+)/.exec(className || "");
+                return !inline && match ? (
+                  <SyntaxHighlighter
+                    style={isMyMessage ? oneDark : oneLight}
+                    language={match[1]}
+                    PreTag="div"
+                    customStyle={{
+                      margin: 0,
+                      borderRadius: "6px",
+                      fontSize: "0.9em",
+                    }}
+                    {...props}
+                  >
+                    {String(children).replace(/\n$/, "")}
+                  </SyntaxHighlighter>
+                ) : (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                );
+              },
+              // Hide images in markdown - they will be displayed separately below
+              img() {
+                return null;
+              },
             }}
           >
             {message.content}
-          </Typography>
+          </ReactMarkdown>
+
+          {/* Display extracted image at the bottom */}
+          {imageUrl && (
+            <Box
+              sx={{
+                mt: 2,
+                pt: 2,
+                borderTop: isMyMessage
+                  ? "1px solid rgba(255, 255, 255, 0.2)"
+                  : "1px solid rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <Box
+                component="img"
+                src={imageUrl}
+                alt="Message attachment"
+                sx={{
+                  maxWidth: "100%",
+                  width: "100%",
+                  height: "auto",
+                  borderRadius: "8px",
+                  display: "block",
+                  objectFit: "contain",
+                  maxHeight: "400px",
+                }}
+                onError={(e: any) => {
+                  e.target.style.display = "none";
+                }}
+              />
+            </Box>
+          )}
         </Paper>
 
         <Typography

@@ -92,8 +92,7 @@ export const useDeleteAiChatSession = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (sessionId: number) =>
-      deleteSession({ path: { sessionId } }),
+    mutationFn: (sessionId: number) => deleteSession({ path: { sessionId } }),
     onSuccess: (response, sessionId, ...rest) => {
       queryClient.invalidateQueries({ queryKey: aiChatKeys.sessions() });
       queryClient.removeQueries({ queryKey: aiChatKeys.session(sessionId) });
@@ -113,8 +112,7 @@ export const useGetAiChatMessages = (
 ) => {
   return useQuery({
     queryKey: aiChatKeys.messages(sessionId),
-    queryFn: () =>
-      getSessionMessages({ path: { sessionId } }),
+    queryFn: () => getSessionMessages({ path: { sessionId } }),
     enabled: !!sessionId,
     ...options,
   });
@@ -192,6 +190,9 @@ export const useSendAiChatMessage = (
       // Always refetch after error or success to ensure we have the latest data
       queryClient.invalidateQueries({
         queryKey: aiChatKeys.messages(sessionId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: aiChatKeys.sessions(),
       });
     },
   });

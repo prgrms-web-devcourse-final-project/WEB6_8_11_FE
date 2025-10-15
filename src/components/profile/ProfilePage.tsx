@@ -47,7 +47,7 @@ import {
   PhotoCamera as PhotoCameraIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "@/hooks/useTranslation";
-import { User, Language, LocationCode, LOCATION_LABELS } from "@/types";
+import { User, Language, LocationName, LOCATION_HIERARCHY, convertLegacyLocationToName } from "@/types";
 import type { GuideResponse, RateResponse } from "@/lib/generated";
 
 const languages: { code: Language; name: string; flag: string }[] = [
@@ -135,7 +135,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   // Edit profile form state
   const [editForm, setEditForm] = useState<{
     nickname: string;
-    location: LocationCode | "";
+    location: LocationName | "";
     description: string;
   }>({
     nickname: user.nickname || "",
@@ -148,7 +148,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     if (isGuide && guideProfile) {
       setEditForm({
         nickname: guideProfile.nickname || user.nickname || "",
-        location: guideProfile.location || "",
+        location: convertLegacyLocationToName(guideProfile.location) || "",
         description: guideProfile.description || "",
       });
     }
@@ -188,7 +188,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         await updateGuideProfileMutation.mutateAsync({
           nickname: editForm.nickname || undefined,
           profileImageUrl: undefined, // TODO: Handle image upload
-          location: editForm.location === "" ? undefined : editForm.location,
+          location: editForm.location === "" ? undefined : editForm.location as any, // API accepts Korean place names directly
           description: editForm.description || undefined,
         });
       } else {
@@ -927,7 +927,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     onChange={(e) =>
                       setEditForm({
                         ...editForm,
-                        location: e.target.value as LocationCode | "",
+                        location: e.target.value as LocationName | "",
                       })
                     }
                     label={t("profile.locationLabel")}
@@ -935,13 +935,25 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     <MenuItem value="">
                       <em>{t("profile.locationNone")}</em>
                     </MenuItem>
-                    {(Object.keys(LOCATION_LABELS) as LocationCode[]).map(
-                      (code) => (
-                        <MenuItem key={code} value={code}>
-                          {translateLocation(code)}
+                    {LOCATION_HIERARCHY.map((region) => [
+                      <MenuItem
+                        key={region.province}
+                        disabled
+                        sx={{
+                          fontWeight: 600,
+                          color: "text.primary",
+                          backgroundColor: "grey.100",
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        {region.province}
+                      </MenuItem>,
+                      ...region.cities.map((city) => (
+                        <MenuItem key={city} value={city} sx={{ pl: 4 }}>
+                          {city}
                         </MenuItem>
-                      )
-                    )}
+                      )),
+                    ])}
                   </Select>
                 </FormControl>
 

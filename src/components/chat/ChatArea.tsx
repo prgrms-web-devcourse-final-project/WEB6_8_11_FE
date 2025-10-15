@@ -44,6 +44,26 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
     }).format(date);
   };
 
+  // Filter out empty AI messages when typing indicator is shown
+  const displayMessages = React.useMemo(() => {
+    if (!currentChat?.messages) return [];
+
+    // If AI is typing, filter out the last message if it's an empty AI message
+    if (isAiTyping) {
+      const messages = [...currentChat.messages];
+      const lastMessage = messages[messages.length - 1];
+
+      // Remove last message if it's an AI message with empty content
+      if (lastMessage?.sender === "ai" && !lastMessage.content?.trim()) {
+        messages.pop();
+      }
+
+      return messages;
+    }
+
+    return currentChat.messages;
+  }, [currentChat?.messages, isAiTyping]);
+
   return (
     <Box
       sx={{
@@ -138,14 +158,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         }}
       >
         <MessageList
-          messages={currentChat?.messages || []}
+          messages={displayMessages}
           currentUser={currentUser}
           typingMessage={isAiTyping ? "AI가 응답을 작성하고 있습니다..." : undefined}
         />
 
         {/* Message Input */}
         <Box sx={{ py: 2, maxWidth: 800, width: "100%", mx: "auto" }}>
-          <MessageInput onSendMessage={onSendMessage} />
+          <MessageInput
+            onSendMessage={onSendMessage}
+            disabled={!currentChat}
+            placeholder={!currentChat ? "채팅방을 선택해주세요" : undefined}
+          />
         </Box>
       </Box>
     </Box>
